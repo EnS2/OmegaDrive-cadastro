@@ -1,8 +1,8 @@
-import { useEffect, useState, useRef } from 'react';
-import './style.css';
-import Trash from '../../assets/icons8-lixo-50.png';
-import Omega from '../../assets/omega.png'; // Certifique-se de que o caminho está certo
-import api from '../../services/api.js';
+import { useEffect, useState, useRef } from "react";
+import "./style.css";
+import Trash from "../../assets/icons8-lixo-50.png";
+import Omega from "../../assets/omega.png";
+import api from "../../services/api";
 
 function Home() {
   const [users, setUsers] = useState([]);
@@ -12,29 +12,40 @@ function Home() {
   const inputPassword = useRef();
 
   async function getUsers() {
-    const usersFromApi = await api.get('/users');
-    setUsers(usersFromApi.data);
+    try {
+      const response = await api.get("/users");
+      setUsers(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar usuários:", error);
+    }
   }
 
   async function createUsers() {
-    await api.post('/users', {
-      name: inputName.current.value,
-      email: inputEmail.current.value,
-      password: inputPassword.current.value
-    });
+    try {
+      await api.post("/cadastro", {
+        name: inputName.current.value,
+        email: inputEmail.current.value,
+        password: inputPassword.current.value,
+      });
 
-    // Limpa os campos
-    inputName.current.value = '';
-    inputEmail.current.value = '';
-    inputPassword.current.value = '';
+      inputName.current.value = "";
+      inputEmail.current.value = "";
+      inputPassword.current.value = "";
 
-    getUsers();
+      getUsers();
+    } catch (error) {
+      console.error("Erro ao criar usuário:", error);
+    }
   }
 
   async function deleteUser(id) {
-    if (window.confirm('Tem certeza que deseja remover este usuário?')) {
-      await api.delete(`/users/${id}`);
-      getUsers();
+    if (window.confirm("Tem certeza que deseja remover este usuário?")) {
+      try {
+        await api.delete(`/users/${id}`);
+        getUsers();
+      } catch (error) {
+        console.error("Erro ao deletar usuário:", error);
+      }
     }
   }
 
@@ -45,32 +56,28 @@ function Home() {
   return (
     <div className="container">
       <form>
-        {/* Cabeçalho com símbolo e nome */}
         <div className="logo-header">
           <img src={Omega} alt="Símbolo Omega" className="logo-omega" />
           <h2>Grupo Omega</h2>
         </div>
 
         <h1>Cadastro de Usuários</h1>
-        <input placeholder='Nome' name='name' type='text' ref={inputName} />
-        <input placeholder='E-mail' name='email' type='email' ref={inputEmail} />
-        <input placeholder='Senha' name='password' type='password' ref={inputPassword} />
+        <input placeholder="Nome" type="text" ref={inputName} />
+        <input placeholder="E-mail" type="email" ref={inputEmail} />
+        <input placeholder="Senha" type="password" ref={inputPassword} />
 
-        <button type='button' onClick={createUsers}>Cadastrar</button>
+        <button type="button" onClick={createUsers}>
+          Cadastrar
+        </button>
       </form>
 
-      {/* Lista de usuários */}
-      {users.map(user => (
+      {users.map((user) => (
         <div key={user.id} className="card">
           <div>
             <p>Nome: <span>{user.name}</span></p>
             <p>Email: <span>{user.email}</span></p>
           </div>
-          <button
-            type="button"
-            title="Remover usuário"
-            onClick={() => deleteUser(user.id)}
-          >
+          <button onClick={() => deleteUser(user.id)}>
             <img src={Trash} alt="Remover" />
           </button>
         </div>
