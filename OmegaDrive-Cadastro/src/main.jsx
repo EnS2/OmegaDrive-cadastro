@@ -1,12 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ReactDOM from 'react-dom/client';
-import Index from './pages/Home/Index.jsx';
+
+import Login from './pages/Home/Login/index.jsx';
+import Home from './pages/Home/Cadastro/Index.jsx';
+
 import './index.css';
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+function Main() {
+  const [tela, setTela] = useState('login');
 
-root.render(
-  <React.StrictMode>
-    <Index />
-  </React.StrictMode>
-);
+  return (
+    <React.StrictMode>
+      {tela === 'login' ? (
+        <Login onEsqueciSenha={() => setTela('cadastro')} />
+      ) : (
+        <Home onVoltar={() => setTela('login')} />
+      )}
+    </React.StrictMode>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<Main />);

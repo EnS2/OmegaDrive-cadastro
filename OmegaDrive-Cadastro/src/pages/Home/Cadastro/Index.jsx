@@ -1,8 +1,9 @@
 import { useEffect, useState, useRef } from "react";
 import "./style.css";
-import Trash from "../../assets/icons8-lixo-50.png";
-import Omega from "../../assets/omega.png";
-import api from "../../services/api";
+import Trash from "../../../assets/icons8-lixo-50.png"
+import Omega from "../../../assets/Omega.png";
+import api from "../../../services/api";
+
 
 function Home() {
   const [users, setUsers] = useState([]);
@@ -10,7 +11,7 @@ function Home() {
   const inputName = useRef();
   const inputEmail = useRef();
   const inputPassword = useRef();
-
+  //Cadastro de usuários
   async function getUsers() {
     try {
       const response = await api.get("/users");
