@@ -1,73 +1,135 @@
 /* ---------- CENTRALIZAÇÃO ABSOLUTA ---------- */
-html, body, #root {                 /* ★ */
+html, body, #root {
   height: 100%;
   margin: 0;
-  display: flex;                    /* centro X + Y */
+  display: flex;
   justify-content: center;
   align-items: center;
 }
 
 /* ---------- FUNDO DARK ---------- */
-body.dark-mode, .container.dark-mode {  /* mantém o fundo roxo   */
+body.dark-mode, .container.dark-mode {
   background: #1c1b2f;
 }
 
 /* ---------- FORM (login-box) ---------- */
-.container form {                   /* ★ substitui .login-box */
+.container form {
   width: 100%;
   max-width: 380px;
   background: #26243f;
   padding: 32px 28px 44px;
   border-radius: 16px;
   box-shadow: 0 4px 14px rgba(0,0,0,.35);
-  display: flex;                    /* coluna interna */
+  display: flex;
   flex-direction: column;
   gap: 16px;
+
+  animation: fadeInUp 0.6s ease-out both;
 }
 
 /* título/logo */
-.logo-header   { display:flex; flex-direction:column; align-items:center; gap:8px; }
-.logo-omega    { width:64px; }
-.container h1  { color:#fff; font-size:1.6rem; text-align:center; margin:8px 0 24px; }
-.container h2  { color:#fff; margin:0; font-weight:600; }
+.logo-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.logo-omega {
+  width: 64px;
+}
+.container h1 {
+  color: #fff;
+  font-size: 1.6rem;
+  text-align: center;
+  margin: 8px 0 24px;
+}
+.container h2 {
+  color: #fff;
+  margin: 0;
+  font-weight: 600;
+}
 
 /* inputs / botão principal */
-input{
-  padding:12px 14px;
-  border-radius:8px;
-  border:none;
-  background:#312f4c;
-  color:#fff;
-  font-size:.95rem;
+input {
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: none;
+  background: #312f4c;
+  color: #fff;
+  font-size: 0.95rem;
 }
-button[type="submit"]{
-  padding:12px;
-  border:none;
-  border-radius:8px;
-  background:#4c48ff;
-  color:#fff;
-  font-weight:600;
-  cursor:pointer;
-  transition:opacity .25s;
+button[type="submit"] {
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #4c48ff;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.25s;
 }
-button[type="submit"]:hover{opacity:.85;}
+button[type="submit"]:hover {
+  opacity: 0.85;
+}
 
 /* ---------- LINK “ESQUECI A SENHA” ---------- */
-.link-button{                        /* ★ menor & alinhado dir. */
-  background:none;
-  border:none;
-  color:#8c88ff;
-  text-decoration:underline;
-  cursor:pointer;
-  font-size:.8rem;                   /* ↓ tamanho do texto  */
-  margin-top:6px;
-  display:block;
-  text-align:right;
-  transition:color .3s;
+.link-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -8px;
 }
-.link-button:hover{color:#c3c0ff;}
+.link-button {
+  background: none;
+  border: none;
+  color: #8c88ff;
+  text-decoration: none;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: color 0.3s;
+  padding: 0;
+}
+.link-button:hover {
+  color: #c3c0ff;
+  text-decoration: underline;
+}
 
 /* acessibilidade */
-.sr-only{
-  position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* ---------- ANIMAÇÃO DE ENTRADA ---------- */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/*------------- Fontes -------------*/
+body {
+  font-family: 'Poppins', sans-serif;
+}
+.link-button {
+  background: none;
+  border: none;
+  color: #8c88ff;
+  text-decoration: none;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 400;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.3s ease, transform 0.2s ease;
 }
