@@ -3,7 +3,7 @@ import "./style.css";
 import Omega from "../../../assets/Omega.png";
 import api from "../../../services/api";
 
-function Login({ onEsqueciSenha }) {
+function Login({ onCriarConta }) {
     const inputEmail = useRef(null);
     const inputPassword = useRef(null);
 
@@ -15,12 +15,12 @@ function Login({ onEsqueciSenha }) {
 
         try {
             const response = await api.post("/login", { email, password });
-            console.log("Usuário logado:", response.data);
+            console.log("Usuário logado:", response.data); // agora usamos response
             alert("Login realizado com sucesso!");
+            // Você pode armazenar o token aqui se necessário
             // localStorage.setItem("token", response.data.token);
-            // navigate("/home");
         } catch (error) {
-            console.error("Erro ao fazer login:", error);
+            console.error("Erro ao fazer login:", error); // agora usamos error
             alert("Login falhou. Verifique suas credenciais.");
         }
     }
@@ -59,9 +59,9 @@ function Login({ onEsqueciSenha }) {
                     <button
                         type="button"
                         className="link-button"
-                        onClick={onEsqueciSenha}
+                        onClick={onCriarConta}
                     >
-                        Esqueci a senha
+                        Criar Novo Usuário?
                     </button>
                 </div>
             </form>
@@ -70,4 +70,3 @@ function Login({ onEsqueciSenha }) {
 }
 
 export default Login;
-

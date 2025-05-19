@@ -6,12 +6,19 @@ import api from "../../../services/api";
 
 function Home({ onVoltar }) {
   const [users, setUsers] = useState([]);
+  const [mensagem, setMensagem] = useState("");
+  const [tipoMensagem, setTipoMensagem] = useState(""); // 'alert-success' | 'alert-error'
 
   const inputName = useRef();
   const inputEmail = useRef();
   const inputPassword = useRef();
 
-  // Buscar usuários cadastrados
+  function exibirMensagem(texto, tipo = "alert-info", tempo = 3000) {
+    setMensagem(texto);
+    setTipoMensagem(tipo);
+    setTimeout(() => setMensagem(""), tempo);
+  }
+
   async function getUsers() {
     try {
       const response = await api.get("/users");
@@ -21,14 +28,15 @@ function Home({ onVoltar }) {
     }
   }
 
-  // Criar novo usuário
-  async function createUsers() {
+  async function handleSubmit(event) {
+    event.preventDefault();
+
     const name = inputName.current.value.trim();
     const email = inputEmail.current.value.trim();
     const password = inputPassword.current.value.trim();
 
     if (!name || !email || !password) {
-      alert("Preencha todos os campos.");
+      exibirMensagem("Preencha todos os campos.", "alert-error");
       return;
     }
 
@@ -39,21 +47,23 @@ function Home({ onVoltar }) {
       inputEmail.current.value = "";
       inputPassword.current.value = "";
 
+      exibirMensagem("Usuário cadastrado com sucesso!", "alert-success");
       getUsers();
     } catch (error) {
       console.error("Erro ao criar usuário:", error);
-      alert("Erro ao cadastrar. Verifique os dados e tente novamente.");
+      exibirMensagem("Erro ao cadastrar. Verifique os dados e tente novamente.", "alert-error");
     }
   }
 
-  // Deletar usuário
   async function deleteUser(id) {
     if (window.confirm("Tem certeza que deseja remover este usuário?")) {
       try {
         await api.delete(`/users/${id}`);
+        exibirMensagem("Usuário removido com sucesso!", "alert-success");
         getUsers();
       } catch (error) {
         console.error("Erro ao deletar usuário:", error);
+        exibirMensagem("Erro ao deletar usuário.", "alert-error");
       }
     }
   }
@@ -64,7 +74,7 @@ function Home({ onVoltar }) {
 
   return (
     <div className="container">
-      <form>
+      <form onSubmit={handleSubmit}>
         <div className="logo-header">
           <img src={Omega} alt="Símbolo Omega" className="logo-omega" />
           <h2>Grupo Omega</h2>
@@ -78,6 +88,7 @@ function Home({ onVoltar }) {
           placeholder="Nome"
           type="text"
           ref={inputName}
+          required
           autoComplete="name"
           aria-label="Nome"
         />
@@ -88,6 +99,7 @@ function Home({ onVoltar }) {
           placeholder="E-mail"
           type="email"
           ref={inputEmail}
+          required
           autoComplete="email"
           aria-label="E-mail"
         />
@@ -98,18 +110,24 @@ function Home({ onVoltar }) {
           placeholder="Senha"
           type="password"
           ref={inputPassword}
+          required
           autoComplete="new-password"
           aria-label="Senha"
         />
 
-        <button type="button" onClick={createUsers}>
-          Cadastrar
-        </button>
+        <button type="submit">Cadastrar</button>
 
         <button type="button" onClick={onVoltar} className="voltar-btn">
           Voltar para Login
         </button>
       </form>
+
+      {/* Alerta visual */}
+      {mensagem && (
+        <div className={`alert ${tipoMensagem}`}>
+          {mensagem}
+        </div>
+      )}
 
       {users.map((user) => (
         <div key={user.id} className="card">
@@ -127,5 +145,4 @@ function Home({ onVoltar }) {
 }
 
 export default Home;
-
 
