@@ -3,7 +3,7 @@ import "./style.css";
 import Omega from "../../../assets/Omega.png";
 import api from "../../../services/api";
 
-function Login({ onCriarConta }) {
+function Login({ onCriarConta, onLoginSucesso }) {
     const inputEmail = useRef(null);
     const inputPassword = useRef(null);
 
@@ -15,12 +15,18 @@ function Login({ onCriarConta }) {
 
         try {
             const response = await api.post("/login", { email, password });
-            console.log("Usuário logado:", response.data); // agora usamos response
+
             alert("Login realizado com sucesso!");
-            // Você pode armazenar o token aqui se necessário
-            // localStorage.setItem("token", response.data.token);
+
+            // Salva o token no localStorage
+            localStorage.setItem("token", response.data.token);
+
+            // Avisa o componente pai que o login deu certo
+            if (onLoginSucesso) {
+                onLoginSucesso();
+            }
         } catch (error) {
-            console.error("Erro ao fazer login:", error); // agora usamos error
+            console.error("Erro ao fazer login:", error);
             alert("Login falhou. Verifique suas credenciais.");
         }
     }
@@ -35,32 +41,20 @@ function Login({ onCriarConta }) {
 
                 <h1>Login</h1>
 
-                <label htmlFor="email" className="sr-only">E-mail</label>
-                <input
-                    id="email"
-                    type="email"
-                    placeholder="E-mail"
-                    ref={inputEmail}
-                    required
-                />
+                <label htmlFor="email" className="sr-only">
+                    E-mail
+                </label>
+                <input id="email" type="email" placeholder="E-mail" ref={inputEmail} required />
 
-                <label htmlFor="password" className="sr-only">Senha</label>
-                <input
-                    id="password"
-                    type="password"
-                    placeholder="Senha"
-                    ref={inputPassword}
-                    required
-                />
+                <label htmlFor="password" className="sr-only">
+                    Senha
+                </label>
+                <input id="password" type="password" placeholder="Senha" ref={inputPassword} required />
 
                 <button type="submit">Entrar</button>
 
                 <div className="link-wrapper">
-                    <button
-                        type="button"
-                        className="link-button"
-                        onClick={onCriarConta}
-                    >
+                    <button type="button" className="link-button" onClick={onCriarConta}>
                         Criar Novo Usuário?
                     </button>
                 </div>
