@@ -1,9 +1,73 @@
-.voltar-btn {
-  margin-top: 10px;
-  background-color: #ccc;
-  border: none;
-  padding: 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
+/* ---------- CENTRALIZAÇÃO ABSOLUTA ---------- */
+html, body, #root {                 /* ★ */
+  height: 100%;
+  margin: 0;
+  display: flex;                    /* centro X + Y */
+  justify-content: center;
+  align-items: center;
+}
+
+/* ---------- FUNDO DARK ---------- */
+body.dark-mode, .container.dark-mode {  /* mantém o fundo roxo   */
+  background: #1c1b2f;
+}
+
+/* ---------- FORM (login-box) ---------- */
+.container form {                   /* ★ substitui .login-box */
+  width: 100%;
+  max-width: 380px;
+  background: #26243f;
+  padding: 32px 28px 44px;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(0,0,0,.35);
+  display: flex;                    /* coluna interna */
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* título/logo */
+.logo-header   { display:flex; flex-direction:column; align-items:center; gap:8px; }
+.logo-omega    { width:64px; }
+.container h1  { color:#fff; font-size:1.6rem; text-align:center; margin:8px 0 24px; }
+.container h2  { color:#fff; margin:0; font-weight:600; }
+
+/* inputs / botão principal */
+input{
+  padding:12px 14px;
+  border-radius:8px;
+  border:none;
+  background:#312f4c;
+  color:#fff;
+  font-size:.95rem;
+}
+button[type="submit"]{
+  padding:12px;
+  border:none;
+  border-radius:8px;
+  background:#4c48ff;
+  color:#fff;
+  font-weight:600;
+  cursor:pointer;
+  transition:opacity .25s;
+}
+button[type="submit"]:hover{opacity:.85;}
+
+/* ---------- LINK “ESQUECI A SENHA” ---------- */
+.link-button{                        /* ★ menor & alinhado dir. */
+  background:none;
+  border:none;
+  color:#8c88ff;
+  text-decoration:underline;
+  cursor:pointer;
+  font-size:.8rem;                   /* ↓ tamanho do texto  */
+  margin-top:6px;
+  display:block;
+  text-align:right;
+  transition:color .3s;
+}
+.link-button:hover{color:#c3c0ff;}
+
+/* acessibilidade */
+.sr-only{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;
 }

@@ -1,17 +1,17 @@
 import { useEffect, useState, useRef } from "react";
 import "./style.css";
-import Trash from "../../../assets/icons8-lixo-50.png"
+import Trash from "../../../assets/icons8-lixo-50.png";
 import Omega from "../../../assets/Omega.png";
 import api from "../../../services/api";
 
-
-function Home() {
+function Home({ onVoltar }) {
   const [users, setUsers] = useState([]);
 
   const inputName = useRef();
   const inputEmail = useRef();
   const inputPassword = useRef();
-  //Cadastro de usuários
+
+  // Buscar usuários cadastrados
   async function getUsers() {
     try {
       const response = await api.get("/users");
@@ -21,13 +21,19 @@ function Home() {
     }
   }
 
+  // Criar novo usuário
   async function createUsers() {
+    const name = inputName.current.value.trim();
+    const email = inputEmail.current.value.trim();
+    const password = inputPassword.current.value.trim();
+
+    if (!name || !email || !password) {
+      alert("Preencha todos os campos.");
+      return;
+    }
+
     try {
-      await api.post("/cadastro", {
-        name: inputName.current.value,
-        email: inputEmail.current.value,
-        password: inputPassword.current.value,
-      });
+      await api.post("/cadastro", { name, email, password });
 
       inputName.current.value = "";
       inputEmail.current.value = "";
@@ -36,9 +42,11 @@ function Home() {
       getUsers();
     } catch (error) {
       console.error("Erro ao criar usuário:", error);
+      alert("Erro ao cadastrar. Verifique os dados e tente novamente.");
     }
   }
 
+  // Deletar usuário
   async function deleteUser(id) {
     if (window.confirm("Tem certeza que deseja remover este usuário?")) {
       try {
@@ -63,23 +71,54 @@ function Home() {
         </div>
 
         <h1>Cadastro de Usuários</h1>
-        <input placeholder="Nome" type="text" ref={inputName} />
-        <input placeholder="E-mail" type="email" ref={inputEmail} />
-        <input placeholder="Senha" type="password" ref={inputPassword} />
+
+        <label className="sr-only" htmlFor="nome">Nome</label>
+        <input
+          id="nome"
+          placeholder="Nome"
+          type="text"
+          ref={inputName}
+          autoComplete="name"
+          aria-label="Nome"
+        />
+
+        <label className="sr-only" htmlFor="email">E-mail</label>
+        <input
+          id="email"
+          placeholder="E-mail"
+          type="email"
+          ref={inputEmail}
+          autoComplete="email"
+          aria-label="E-mail"
+        />
+
+        <label className="sr-only" htmlFor="senha">Senha</label>
+        <input
+          id="senha"
+          placeholder="Senha"
+          type="password"
+          ref={inputPassword}
+          autoComplete="new-password"
+          aria-label="Senha"
+        />
 
         <button type="button" onClick={createUsers}>
           Cadastrar
+        </button>
+
+        <button type="button" onClick={onVoltar} className="voltar-btn">
+          Voltar para Login
         </button>
       </form>
 
       {users.map((user) => (
         <div key={user.id} className="card">
-          <div>
+          <div className="info">
             <p>Nome: <span>{user.name}</span></p>
             <p>Email: <span>{user.email}</span></p>
           </div>
-          <button onClick={() => deleteUser(user.id)}>
-            <img src={Trash} alt="Remover" />
+          <button onClick={() => deleteUser(user.id)} aria-label="Remover usuário">
+            <img src={Trash} alt="Ícone de lixeira" />
           </button>
         </div>
       ))}
@@ -88,3 +127,5 @@ function Home() {
 }
 
 export default Home;
+
+
