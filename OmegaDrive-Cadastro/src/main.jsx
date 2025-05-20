@@ -7,6 +7,7 @@ import Home from './pages/Home/Site/Dashboard.jsx'; // ✅ Corrigido: Dashboard/
 
 import './index.css';
 
+// eslint-disable-next-line react-refresh/only-export-components
 function Main() {
   const [tela, setTela] = useState('login');
 

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import CalendarComponent from '../../components/CalendarComponent';
-import TripCard from '../../components/TripCard';
-import Summary from '../../components/Summary';
+import CalendarComponent from '@components/CalendarComponent';
+import TripCard from '@components/TripCard';
+import Summary from '@components/Summary';
+import '@components/TripCard.css';
+import './Dashboard.css';
 
 const Dashboard = () => {
     const [selectedDate, setSelectedDate] = useState(new Date());
@@ -31,9 +33,17 @@ const Dashboard = () => {
         }
     ]);
 
-    const tripsOfDay = trips.filter(trip =>
-        new Date(trip.date).toDateString() === selectedDate.toDateString()
-    );
+    // Função para formatar a data localmente como "YYYY-MM-DD"
+    const formatDateLocal = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // meses começam em 0
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    const selectedDateFormatted = formatDateLocal(selectedDate);
+
+    const tripsOfDay = trips.filter(trip => trip.date === selectedDateFormatted);
 
     return (
         <div className="dashboard-container">
@@ -52,4 +62,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-

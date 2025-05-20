@@ -1,13 +1,44 @@
-*{
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Merriweather", serif;
+.dashboard-container {
+  display: flex;
+  gap: 2rem;
+  padding: 2rem;
+  background-color: #1e1e2f;
+  min-height: 100vh;
 }
 
-body{
-  min-height: 100vh;
-  width: 100vw;
-  background: linear-gradient(180deg, #363467 0%, rgba(30, 29, 79, 0.8) 100%);
+.sidebar {
+  width: 300px;
+  background: #fff;
+  border-radius: 8px;
+  padding: 1rem;
+}
 
+.calendar-wrapper {
+  margin-top: 1rem;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.new-record-button {
+  background-color: #7e3ff2;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+h2 {
+  margin: 0;
 }
