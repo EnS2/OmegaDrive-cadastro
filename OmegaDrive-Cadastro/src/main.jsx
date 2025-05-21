@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 
 import Login from './pages/Home/Login/index.jsx';
 import Cadastro from './pages/Home/Cadastro/Index.jsx';
-import Home from './pages/Home/Site/Dashboard.jsx'; // ✅ Corrigido: Dashboard/Home
+import Home from './pages/Home/Site/Dashboard.jsx';
 
 import './index.css';
 

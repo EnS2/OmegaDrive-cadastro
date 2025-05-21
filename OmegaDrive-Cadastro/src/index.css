@@ -1,44 +1,35 @@
-.dashboard-container {
-  display: flex;
-  gap: 2rem;
-  padding: 2rem;
-  background-color: #1e1e2f;
-  min-height: 100vh;
-}
-
-.sidebar {
-  width: 300px;
-  background: #fff;
-  border-radius: 8px;
-  padding: 1rem;
-}
-
-.calendar-wrapper {
-  margin-top: 1rem;
-}
-
-.main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.main-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.new-record-button {
-  background-color: #7e3ff2;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-h2 {
+body {
   margin: 0;
+  font-family: 'Noto Serif', serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ⚪ Fundo branco forçado no Dashboard */
+body.dashboard-mode {
+  background-color: #ffffff !important;
+}
+
+:root {
+  --bg-color: #ffffff;
+  --text-color: #1e1e2f;
+  --container-bg: #f4f4f4;
+  --button-bg: #7e3ff2;
+  --button-text: white;
+}
+
+[data-theme='dark'] {
+  --bg-color: #1e1e2f;
+  --text-color: #ffffff;
+  --container-bg: #2e2e48;
+  --button-bg: #a084f6;
+  --button-text: white;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
