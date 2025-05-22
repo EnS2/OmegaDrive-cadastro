@@ -1,0 +1,61 @@
+/* Sidebar */
+.sidebar {
+  flex: 0 0 360px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Card unificado de calendário + resumo */
+.calendar-summary-card {
+  background-color: #f9f9ff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Envolvendo o calendário */
+.calendar-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Header do calendário */
+.calendar-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.calendar-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.calendar-date-info {
+  font-size: 0.95rem;
+  color: #7b2ff7;
+  font-weight: 500;
+}
+
+/* Corrigir espaçamento da data */
+.react-calendar {
+  border: none;
+  width: 100% !important;
+}
+
+/* Responsividade opcional */
+@media (max-width: 768px) {
+  .main-content {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+  }
+}
