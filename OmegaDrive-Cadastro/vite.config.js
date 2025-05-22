@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 import path from "path";
 import { fileURLToPath } from "url";
 
-// Suporte para __dirname e __filename em ESM
+// Suporte para __dirname em módulos ES (ESM)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -18,10 +18,13 @@ export default defineConfig({
       "@assets": path.resolve(__dirname, "src/assets"),
       "@layout": path.resolve(__dirname, "src/layout"),
       "@motion": path.resolve(__dirname, "src/motion"),
+      // Adicione outros atalhos se necessário
     },
+    extensions: [".js", ".jsx", ".ts", ".tsx", ".json"], // ajuda na resolução automática
   },
   server: {
-    port: 5173, // Você pode mudar a porta aqui, se desejar
-    open: true, // Abre automaticamente o navegador ao rodar o projeto
+    port: 5173, // Porta customizada
+    open: true, // Abre o navegador automaticamente
+    strictPort: true, // Se a porta 5173 estiver ocupada, erro em vez de escolher outra
   },
 });
