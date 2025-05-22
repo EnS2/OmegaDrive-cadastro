@@ -1,5 +1,7 @@
 import { useEffect } from "react";
-import Header from "@/layout/Header";
+import { Car } from "lucide-react";
+import CalendarComponent from "@/components/CalendarComponent";
+import ResumoDia from "@/components/ResumoDia";
 import "@/pages/Home/Site/Dashboard.css";
 
 const Dashboard = () => {
@@ -11,25 +13,33 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <>
-      <Header />
-
-      {/* Título no canto esquerdo dentro da área branca */}
-      <div className="px-6 pt-4">
-        <h1 className="text-2xl font-bold text-black">Grupo Ômega</h1>
-      </div>
-
-      <div className="dashboard-container">
-        <div className="calendar-section">{/* ... */}</div>
-
-        <div className="records-section">
-          <div className="flex justify-between items-center mb-4">
-            <h2>Registros</h2>
-            <button className="new-record-button">Adicionar Registro</button>
+    <div className="dashboard-container">
+      {/* TOPO */}
+      <div className="top-bar">
+        <div className="branding-left">
+          <Car className="car-icon" />
+          <div className="branding-texts">
+            <h1 className="title">Grupo Ômega</h1>
+            <p className="subtitle">Controle de Km</p>
           </div>
         </div>
       </div>
-    </>
+
+      {/* CONTEÚDO PRINCIPAL */}
+      <div className="main-content">
+        {/* LADO ESQUERDO */}
+        <div className="sidebar">
+          <CalendarComponent />
+          <ResumoDia />
+        </div>
+
+        {/* LADO DIREITO */}
+        <div className="records-section">
+          <h2 className="records-title"></h2>
+          <button className="new-record-button">Adicionar Registro</button>
+        </div>
+      </div>
+    </div>
   );
 };
 

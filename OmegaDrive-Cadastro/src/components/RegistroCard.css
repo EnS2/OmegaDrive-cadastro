@@ -1,0 +1,29 @@
+.records-section {
+  width: 100%;
+  max-width: 1020px;
+  display: flex;
+  justify-content: flex-end;
+  padding: 2rem 2rem 0 2rem;
+  margin: 0 auto;
+  background-color: transparent; /* remove fundo */
+  box-shadow: none;              /* remove sombra */
+  border: none;                  /* remove qualquer borda */
+}
+
+.new-record-button {
+  background-color: #9333ea;
+  color: white;
+  padding: 0.6rem 1.4rem;
+  border: none;
+  border-radius: 0.6rem;
+  cursor: pointer;
+  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.3s ease;
+}
+
+.new-record-button:hover {
+  background-color: #7e22ce;
+}

@@ -1,16 +1,3 @@
-body {
-  margin: 0;
-  font-family: 'Noto Serif', serif;
-  background-color: var(--bg-color);
-  color: var(--text-color);
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-/* ⚪ Fundo branco forçado no Dashboard */
-body.dashboard-mode {
-  background-color: #ffffff !important;
-}
-
 :root {
   --bg-color: #ffffff;
   --text-color: #1e1e2f;
@@ -27,6 +14,13 @@ body.dashboard-mode {
   --button-text: white;
 }
 
+body {
+  margin: 0;
+  font-family: 'Noto Serif', serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
 html, body, #root {
   height: 100%;
   width: 100%;

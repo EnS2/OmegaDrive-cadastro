@@ -1,0 +1,95 @@
+/* Reset básico */
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Container geral */
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  min-height: 100vh;
+}
+
+/* TOPO: gradiente ocupando toda a parte de cima */
+.top-bar {
+  width: 100vw;
+  background: linear-gradient(1035deg, #7b2ff7, #1e40af);
+  padding: 2rem 2rem;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+/* Branding à esquerda com ícone + textos */
+.branding-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: white;
+}
+
+.car-icon {
+  color: white;
+  width: 40px;
+  height: 40px;
+}
+
+.branding-texts {
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 0.9rem;
+  opacity: 0.85;
+  margin: 0;
+}
+
+/* --- NOVO BLOCO PARA CONTEÚDO PRINCIPAL --- */
+.main-content {
+  display: flex;
+  flex-direction: row;
+  padding: 2rem;
+  gap: 2rem;
+}
+
+/* Sidebar com calendário e resumo */
+.sidebar {
+  flex: 0 0 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Seção de registros */
+.records-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.records-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.new-record-button {
+  background: #8a2be2;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  width: fit-content;
+}
