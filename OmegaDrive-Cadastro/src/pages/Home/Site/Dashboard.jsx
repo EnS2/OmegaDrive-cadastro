@@ -1,4 +1,3 @@
-// Dashboard.jsx
 import { useEffect, useState } from "react";
 import { Car, Plus } from "lucide-react";
 import Calendar from "react-calendar";
@@ -76,6 +75,7 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
+      {/* Topo com marca */}
       <div className="top-bar">
         <div className="branding-left">
           <Car className="car-icon" />
@@ -86,17 +86,16 @@ const Dashboard = () => {
         </div>
       </div>
 
+      {/* Conteúdo principal */}
       <div className="main-content">
+        {/* Lateral esquerda - Calendário e resumo */}
         <div className="sidebar">
           <div className="calendar-summary-card">
             <div className="calendar-wrapper">
               <div className="calendar-header">
                 <h3>Calendário</h3>
-                <span className="calendar-date-info">
-                  {formatarData(selectedDate)}
-                </span>
+                <span className="calendar-date-info">{formatarData(selectedDate)}</span>
               </div>
-
               <Calendar
                 onChange={setSelectedDate}
                 value={selectedDate}
@@ -106,9 +105,7 @@ const Dashboard = () => {
 
             <div className="resumo-container">
               <h3 className="resumo-titulo">Resumo do Dia</h3>
-              <span style={{ fontSize: "0.9rem", marginBottom: "0.5rem" }}>
-                {selectedDate.toLocaleDateString("pt-BR")}
-              </span>
+              <span className="data-formatada">{selectedDate.toLocaleDateString("pt-BR")}</span>
               <div className="resumo-dados">
                 <div className="resumo-card">
                   <div className="resumo-label">Viagens</div>
@@ -123,13 +120,10 @@ const Dashboard = () => {
           </div>
         </div>
 
+        {/* Lado direito - Registros */}
         <div className="records-section">
-          <button
-            className="new-record-button"
-            onClick={() => setMostrarModal(true)}
-          >
-            <Plus size={16} />
-            Adicionar Registro
+          <button className="new-record-button" onClick={() => setMostrarModal(true)}>
+            <Plus size={16} /> Adicionar Registro
           </button>
 
           <div className="registros-do-dia">
@@ -145,38 +139,37 @@ const Dashboard = () => {
                   </div>
                   <div className="registro-body">
                     <div className="dados-condutor">
-                      <small className="registrado-por">
-                        📝 Registrado por: <strong>{r.condutor}</strong>
-                      </small>
+                      <small>📝 Registrado por: <strong>{r.condutor}</strong></small>
                       {r.editadoPor && (
-                        <small className="editado-por">
-                          ✏️ Editado por: <strong>{r.editadoPor}</strong>
-                        </small>
+                        <small>✏️ Editado por: <strong>{r.editadoPor}</strong></small>
                       )}
                       <small>RG: {r.rg}</small>
                       <p><strong>Destino:</strong> {r.destino}</p>
                       <p><strong>Horário:</strong> {r.horaInicio} → {r.horaSaida}</p>
                     </div>
                     <div className="dados-km">
-                      <div>
-                        <strong>Inicial</strong>
-                        <p>{r.kmInicial} km</p>
-                      </div>
-                      <div>
-                        <strong>Final</strong>
-                        <p>{r.kmFinal} km</p>
-                      </div>
+                      <div><strong>Inicial</strong><p>{r.kmInicial} km</p></div>
+                      <div><strong>Final</strong><p>{r.kmFinal} km</p></div>
                       <div>
                         <strong>Total</strong>
-                        <p>{parseFloat(r.kmFinal) - parseFloat(r.kmInicial)} km</p>
+                        <p style={{ fontWeight: "bold", color: "#4a00e0" }}>
+                          {parseFloat(r.kmFinal) - parseFloat(r.kmInicial)} km
+                        </p>
                       </div>
                     </div>
                     <div className="botoes">
-                      <button className="editar" onClick={() => {
-                        setRegistroEditando({ ...r, index: i });
-                        setMostrarModal(true);
-                      }}>✏️ Editar</button>
-                      <button className="excluir" onClick={() => handleExcluir(i)}>🗑️ Excluir</button>
+                      <button
+                        className="editar"
+                        onClick={() => {
+                          setRegistroEditando({ ...r, index: i });
+                          setMostrarModal(true);
+                        }}
+                      >
+                        ✏️ Editar
+                      </button>
+                      <button className="excluir" onClick={() => handleExcluir(i)}>
+                        🗑️ Excluir
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -186,6 +179,7 @@ const Dashboard = () => {
         </div>
       </div>
 
+      {/* Modal de Registro */}
       {mostrarModal && (
         <ModalRegistro
           dataSelecionada={selectedDate}
@@ -212,3 +206,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+

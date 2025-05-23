@@ -14,6 +14,7 @@ const ModalRegistro = ({ dataSelecionada, onClose, onSalvar }) => {
     horaSaida: "",
     data: dataSelecionada,
     editadoPor: "",
+    observacoes: "", // Novo campo
   });
 
   const [erros, setErros] = useState({});
@@ -59,12 +60,13 @@ const ModalRegistro = ({ dataSelecionada, onClose, onSalvar }) => {
   };
 
   const handleSubmit = (e) => {
-    e.preventDefault(); // ← impede recarregamento da página
+    e.preventDefault();
     if (!validar()) return;
 
     onSalvar(formData);
     toast.success("Registro salvo com sucesso!");
 
+    // Resetar o formulário
     setFormData({
       condutor: "",
       rg: "",
@@ -77,6 +79,7 @@ const ModalRegistro = ({ dataSelecionada, onClose, onSalvar }) => {
       horaSaida: "",
       data: dataSelecionada,
       editadoPor: "",
+      observacoes: "", // limpar também
     });
 
     setErros({});
@@ -87,7 +90,7 @@ const ModalRegistro = ({ dataSelecionada, onClose, onSalvar }) => {
     <div className="modal-overlay" onClick={onClose}>
       <div
         className="modal-content"
-        onClick={(e) => e.stopPropagation()} // Impede fechamento ao clicar dentro do modal
+        onClick={(e) => e.stopPropagation()}
       >
         <button className="close-button" onClick={onClose}>
           &times;
@@ -97,7 +100,6 @@ const ModalRegistro = ({ dataSelecionada, onClose, onSalvar }) => {
 
         <form className="form-registro" onSubmit={handleSubmit}>
           <div className="form-grid">
-            {/* Campos de texto */}
             {[
               { label: "Condutor", name: "condutor" },
               { label: "RG", name: "rg" },
@@ -112,29 +114,46 @@ const ModalRegistro = ({ dataSelecionada, onClose, onSalvar }) => {
               </div>
             ))}
 
-            {/* Km */}
             <div>
               <label>Km Inicial</label>
-              <input name="kmInicial" type="number" value={formData.kmInicial} onChange={handleChange} />
+              <input
+                name="kmInicial"
+                type="number"
+                value={formData.kmInicial}
+                onChange={handleChange}
+              />
               {erros.kmInicial && <small className="erro">{erros.kmInicial}</small>}
             </div>
             <div>
               <label>Km Final</label>
-              <input name="kmFinal" type="number" value={formData.kmFinal} onChange={handleChange} />
+              <input
+                name="kmFinal"
+                type="number"
+                value={formData.kmFinal}
+                onChange={handleChange}
+              />
               {erros.kmFinal && <small className="erro">{erros.kmFinal}</small>}
             </div>
 
-            {/* Horários */}
             <div>
               <label>Hora de Início</label>
-              <input name="horaInicio" type="time" value={formData.horaInicio} onChange={handleChange} />
+              <input
+                name="horaInicio"
+                type="time"
+                value={formData.horaInicio}
+                onChange={handleChange}
+              />
             </div>
             <div>
               <label>Hora de Saída</label>
-              <input name="horaSaida" type="time" value={formData.horaSaida} onChange={handleChange} />
+              <input
+                name="horaSaida"
+                type="time"
+                value={formData.horaSaida}
+                onChange={handleChange}
+              />
             </div>
 
-            {/* Data */}
             <div className="full-width">
               <label>Data</label>
               <input
@@ -149,10 +168,23 @@ const ModalRegistro = ({ dataSelecionada, onClose, onSalvar }) => {
               />
             </div>
 
-            {/* Editado por */}
             <div className="full-width">
               <label>Editado por (opcional)</label>
-              <input name="editadoPor" value={formData.editadoPor} onChange={handleChange} />
+              <input
+                name="editadoPor"
+                value={formData.editadoPor}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="full-width">
+              <label>Observações (opcional)</label>
+              <textarea
+                name="observacoes"
+                value={formData.observacoes}
+                onChange={handleChange}
+                placeholder="Digite anotações ou informações adicionais..."
+              />
             </div>
           </div>
 
