@@ -86,6 +86,45 @@ body {
   gap: 2rem;
 }
 
+/* RESUMO DO DIA */
+.resumo-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.resumo-titulo {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+.resumo-dados {
+  display: flex;
+  gap: 1rem;
+}
+
+.resumo-card {
+  flex: 1;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.resumo-label {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.resumo-valor {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-top: 0.3rem;
+}
+
 /* REGISTROS */
 .records-section {
   flex: 1;
@@ -118,4 +157,111 @@ body {
 
 .new-record-button:hover {
   background: #6f23c9;
+}
+
+/* Lista de registros */
+.registros-do-dia {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 1rem;
+  align-self: stretch;
+}
+
+/* Card de registro individual */
+.registro-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+}
+
+/* Cabeçalho do card com gradiente e nome do veículo */
+.registro-header {
+  background: linear-gradient(90deg, #7b2ff7, #1e40af);
+  color: white;
+  padding: 0.75rem 1.25rem;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Corpo do card com dados */
+.registro-body {
+  display: flex;
+  justify-content: space-between;
+  padding: 1.25rem;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.dados-condutor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 220px;
+  font-size: 0.95rem;
+}
+
+.dados-km {
+  background-color: #f9fafb;
+  border-radius: 10px;
+  padding: 0.8rem 1rem;
+  flex: 1;
+  display: flex;
+  justify-content: space-around;
+  gap: 1rem;
+}
+
+.dados-km div {
+  text-align: center;
+}
+
+.dados-km strong {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.dados-km p {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0.2rem 0 0;
+}
+
+.botoes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.editar,
+.excluir {
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+}
+
+.editar {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+}
+
+.editar:hover {
+  background-color: #dbeafe;
+}
+
+.excluir {
+  background-color: #fef2f2;
+  color: #b91c1c;
+}
+
+.excluir:hover {
+  background-color: #fee2e2;
 }
