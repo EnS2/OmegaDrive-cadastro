@@ -16,6 +16,7 @@ const Dashboard = () => {
   const [totalViagens, setTotalViagens] = useState(0);
   const [kmTotal, setKmTotal] = useState(0);
   const [registroEditando, setRegistroEditando] = useState(null);
+  const [anotacao, setAnotacao] = useState("");
 
   useEffect(() => {
     document.body.style.backgroundColor = "#ffffff";
@@ -23,6 +24,57 @@ const Dashboard = () => {
       document.body.style.backgroundColor = "";
     };
   }, []);
+
+  // Carregar anotação da data selecionada
+  useEffect(() => {
+    const chave = `anotacao-${selectedDate.toISOString().split("T")[0]}`;
+    const anotacaoSalva = localStorage.getItem(chave);
+    setAnotacao(anotacaoSalva || "");
+  }, [selectedDate]);
+
+  // Salvar anotação automaticamente
+  const handleAnotacaoChange = (e) => {
+    const novoTexto = e.target.value;
+    setAnotacao(novoTexto);
+    const chave = `anotacao-${selectedDate.toISOString().split("T")[0]}`;
+    localStorage.setItem(chave, novoTexto);
+  };
+
+  // Carregar registros do localStorage ao iniciar
+  useEffect(() => {
+    const registrosSalvos = localStorage.getItem("registrosSalvos");
+    if (registrosSalvos) {
+      try {
+        const dados = JSON.parse(registrosSalvos);
+        const comDatasConvertidas = dados.map((r) => ({
+          ...r,
+          data: new Date(r.data),
+        }));
+        setTodosRegistros(comDatasConvertidas);
+      } catch (e) {
+        console.error("Erro ao carregar registros do localStorage:", e);
+      }
+    } else {
+      const novoRegistro = {
+        condutor: "Carlos Lima",
+        rg: "123456789",
+        veiculo: "Fiat Uno",
+        destino: "Centro de Distribuição",
+        horaInicio: "08:00",
+        horaSaida: "12:30",
+        kmInicial: "52000",
+        kmFinal: "52235",
+        observacoes: "Entrega feita sem intercorrências.",
+        data: new Date(),
+      };
+      setTodosRegistros([novoRegistro]);
+    }
+  }, []);
+
+  // Salvar registros no localStorage sempre que mudar
+  useEffect(() => {
+    localStorage.setItem("registrosSalvos", JSON.stringify(todosRegistros));
+  }, [todosRegistros]);
 
   useEffect(() => {
     const registrosFiltrados = todosRegistros.filter((r) => {
@@ -50,9 +102,12 @@ const Dashboard = () => {
   };
 
   const handleAddRegistro = (novoRegistro) => {
+    const dataCorrigida = new Date(novoRegistro.data);
+    dataCorrigida.setHours(0, 0, 0, 0);
+
     const registroCorrigido = {
       ...novoRegistro,
-      data: new Date(novoRegistro.data),
+      data: dataCorrigida,
     };
     setTodosRegistros((prev) => [...prev, registroCorrigido]);
     setMostrarModal(false);
@@ -75,7 +130,6 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
-      {/* Topo com marca */}
       <div className="top-bar">
         <div className="branding-left">
           <Car className="car-icon" />
@@ -86,9 +140,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Conteúdo principal */}
       <div className="main-content">
-        {/* Lateral esquerda - Calendário e resumo */}
         <div className="sidebar">
           <div className="calendar-summary-card">
             <div className="calendar-wrapper">
@@ -105,7 +157,9 @@ const Dashboard = () => {
 
             <div className="resumo-container">
               <h3 className="resumo-titulo">Resumo do Dia</h3>
-              <span className="data-formatada">{selectedDate.toLocaleDateString("pt-BR")}</span>
+              <span className="data-formatada">
+                {selectedDate.toLocaleDateString("pt-BR")}
+              </span>
               <div className="resumo-dados">
                 <div className="resumo-card">
                   <div className="resumo-label">Viagens</div>
@@ -120,7 +174,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Lado direito - Registros */}
         <div className="records-section">
           <button className="new-record-button" onClick={() => setMostrarModal(true)}>
             <Plus size={16} /> Adicionar Registro
@@ -146,6 +199,11 @@ const Dashboard = () => {
                       <small>RG: {r.rg}</small>
                       <p><strong>Destino:</strong> {r.destino}</p>
                       <p><strong>Horário:</strong> {r.horaInicio} → {r.horaSaida}</p>
+                      {r.observacoes && (
+                        <p className="observacoes">
+                          <strong>Observações:</strong> {r.observacoes}
+                        </p>
+                      )}
                     </div>
                     <div className="dados-km">
                       <div><strong>Inicial</strong><p>{r.kmInicial} km</p></div>
@@ -176,10 +234,20 @@ const Dashboard = () => {
               ))
             )}
           </div>
+
+          <div className="anotacoes-section mt-4">
+            <h3 className="text-lg font-semibold">Anotações do Dia</h3>
+            <textarea
+              className="anotacoes-textarea"
+              placeholder="Escreva aqui suas anotações..."
+              value={anotacao}
+              onChange={handleAnotacaoChange}
+              rows={5}
+            />
+          </div>
         </div>
       </div>
 
-      {/* Modal de Registro */}
       {mostrarModal && (
         <ModalRegistro
           dataSelecionada={selectedDate}
@@ -188,14 +256,23 @@ const Dashboard = () => {
             setRegistroEditando(null);
           }}
           onSalvar={(registro) => {
+            const dataCorrigida = new Date(registro.data);
+            dataCorrigida.setHours(0, 0, 0, 0);
+
+            const registroFinal = {
+              ...registro,
+              data: dataCorrigida,
+            };
+
             if (registroEditando) {
               const novos = [...todosRegistros];
-              novos[registroEditando.index] = { ...registro };
+              novos[registroEditando.index] = { ...registroFinal };
               setTodosRegistros(novos);
               toast.success("Registro editado com sucesso.");
             } else {
-              handleAddRegistro(registro);
+              handleAddRegistro(registroFinal);
             }
+
             setRegistroEditando(null);
           }}
           registroInicial={registroEditando}
@@ -206,4 +283,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-

@@ -1,106 +1,29 @@
-/* REGISTRO INDIVIDUAL */
-.registro-card {
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  overflow: visible; /* ← Importante para não cortar */
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-  background-color: #fff;
-  padding-bottom: 1rem; /* Adiciona espaço interno no final */
+.records-section {
+  width: 100%;
+  max-width: 1020px;
+  display: flex;
+  justify-content: flex-end;
+  padding: 2rem 2rem 0 2rem;
+  margin: 0 auto;
+  background-color: transparent; /* remove fundo */
+  box-shadow: none;              /* remove sombra */
+  border: none;                  /* remove qualquer borda */
 }
 
-/* CABEÇALHO */
-.registro-header {
-  background: linear-gradient(90deg, #7b2ff7, #1e40af);
+.new-record-button {
+  background-color: #9333ea;
   color: white;
-  padding: 0.75rem 1.25rem;
-  font-weight: 600;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-/* CORPO */
-.registro-body {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  justify-content: space-between;
-  padding: 1.25rem;
-  overflow: visible;
-}
-
-/* DADOS DO CONDUTOR */
-.dados-condutor {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  min-width: 220px;
-  font-size: 0.95rem;
-  word-break: break-word; /* ← Evita quebra de layout com textos longos */
-}
-
-/* BLOCO DE KM */
-.dados-km {
-  background-color: #f9fafb;
-  border-radius: 10px;
-  padding: 0.8rem 1rem;
-  flex: 1;
-  display: flex;
-  justify-content: space-around;
-  gap: 1rem;
-  min-width: 220px;
-}
-
-.dados-km div {
-  text-align: center;
-}
-
-.dados-km strong {
-  font-size: 0.85rem;
-  color: #6b7280;
-}
-
-.dados-km p {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin: 0.2rem 0 0;
-}
-
-/* BOTÕES */
-.botoes {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  justify-content: center;
-  min-width: 90px;
-}
-
-.editar,
-.excluir {
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: 500;
+  padding: 0.6rem 1.4rem;
   border: none;
+  border-radius: 0.6rem;
   cursor: pointer;
-  white-space: nowrap;
+  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.3s ease;
 }
 
-.editar {
-  background-color: #eff6ff;
-  color: #1d4ed8;
-}
-
-.editar:hover {
-  background-color: #dbeafe;
-}
-
-.excluir {
-  background-color: #fef2f2;
-  color: #b91c1c;
-}
-
-.excluir:hover {
-  background-color: #fee2e2;
+.new-record-button:hover {
+  background-color: #7e22ce;
 }

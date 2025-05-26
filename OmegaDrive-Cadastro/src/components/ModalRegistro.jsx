@@ -14,17 +14,30 @@ const ModalRegistro = ({ dataSelecionada, onClose, onSalvar }) => {
     horaSaida: "",
     data: dataSelecionada,
     editadoPor: "",
-    observacoes: "", // Novo campo
+    observacoes: "",
   });
 
   const [erros, setErros] = useState({});
 
   useEffect(() => {
-    setFormData((prev) => ({
-      ...prev,
-      data: dataSelecionada,
-    }));
+    const dadosSalvos = localStorage.getItem("registroTemporario");
+    if (dadosSalvos) {
+      const dadosParseados = JSON.parse(dadosSalvos);
+      setFormData({
+        ...dadosParseados,
+        data: new Date(dataSelecionada),
+      });
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        data: dataSelecionada,
+      }));
+    }
   }, [dataSelecionada]);
+
+  useEffect(() => {
+    localStorage.setItem("registroTemporario", JSON.stringify(formData));
+  }, [formData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -51,6 +64,9 @@ const ModalRegistro = ({ dataSelecionada, onClose, onSalvar }) => {
       novosErros.kmFinal = "Km final não pode ser menor que o inicial.";
     }
 
+    if (!formData.horaInicio) novosErros.horaInicio = "Informe a hora de início.";
+    if (!formData.horaSaida) novosErros.horaSaida = "Informe a hora de saída.";
+
     setErros(novosErros);
     if (Object.keys(novosErros).length > 0) {
       toast.error("Preencha os campos obrigatórios corretamente.");
@@ -59,14 +75,25 @@ const ModalRegistro = ({ dataSelecionada, onClose, onSalvar }) => {
     return Object.keys(novosErros).length === 0;
   };
 
+  const handleClose = () => {
+    localStorage.removeItem("registroTemporario");
+    onClose();
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!validar()) return;
 
-    onSalvar(formData);
-    toast.success("Registro salvo com sucesso!");
+    onSalvar({
+      ...formData,
+      data: new Date(formData.data),
+      kmInicial: Number(formData.kmInicial),
+      kmFinal: Number(formData.kmFinal),
+    });
 
-    // Resetar o formulário
+    toast.success("Registro salvo com sucesso!");
+    localStorage.removeItem("registroTemporario");
+
     setFormData({
       condutor: "",
       rg: "",
@@ -79,7 +106,7 @@ const ModalRegistro = ({ dataSelecionada, onClose, onSalvar }) => {
       horaSaida: "",
       data: dataSelecionada,
       editadoPor: "",
-      observacoes: "", // limpar também
+      observacoes: "",
     });
 
     setErros({});
@@ -87,12 +114,9 @@ const ModalRegistro = ({ dataSelecionada, onClose, onSalvar }) => {
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div
-        className="modal-content"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button className="close-button" onClick={onClose}>
+    <div className="modal-overlay" onClick={handleClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <button className="close-button" onClick={handleClose}>
           &times;
         </button>
         <h2 className="modal-title">Novo Registro</h2>
@@ -108,27 +132,36 @@ const ModalRegistro = ({ dataSelecionada, onClose, onSalvar }) => {
               { label: "Destino", name: "destino" },
             ].map(({ label, name }) => (
               <div key={name}>
-                <label>{label}</label>
-                <input name={name} value={formData[name]} onChange={handleChange} />
+                <label htmlFor={name}>{label}</label>
+                <input
+                  id={name}
+                  name={name}
+                  value={formData[name]}
+                  onChange={handleChange}
+                />
                 {erros[name] && <small className="erro">{erros[name]}</small>}
               </div>
             ))}
 
             <div>
-              <label>Km Inicial</label>
+              <label htmlFor="kmInicial">Km Inicial</label>
               <input
+                id="kmInicial"
                 name="kmInicial"
                 type="number"
+                min="0"
                 value={formData.kmInicial}
                 onChange={handleChange}
               />
               {erros.kmInicial && <small className="erro">{erros.kmInicial}</small>}
             </div>
             <div>
-              <label>Km Final</label>
+              <label htmlFor="kmFinal">Km Final</label>
               <input
+                id="kmFinal"
                 name="kmFinal"
                 type="number"
+                min="0"
                 value={formData.kmFinal}
                 onChange={handleChange}
               />
@@ -136,32 +169,37 @@ const ModalRegistro = ({ dataSelecionada, onClose, onSalvar }) => {
             </div>
 
             <div>
-              <label>Hora de Início</label>
+              <label htmlFor="horaInicio">Hora de Início</label>
               <input
+                id="horaInicio"
                 name="horaInicio"
                 type="time"
                 value={formData.horaInicio}
                 onChange={handleChange}
               />
+              {erros.horaInicio && <small className="erro">{erros.horaInicio}</small>}
             </div>
             <div>
-              <label>Hora de Saída</label>
+              <label htmlFor="horaSaida">Hora de Saída</label>
               <input
+                id="horaSaida"
                 name="horaSaida"
                 type="time"
                 value={formData.horaSaida}
                 onChange={handleChange}
               />
+              {erros.horaSaida && <small className="erro">{erros.horaSaida}</small>}
             </div>
 
             <div className="full-width">
-              <label>Data</label>
+              <label htmlFor="data">Data</label>
               <input
+                id="data"
                 name="data"
                 type="date"
                 value={
-                  formData.data instanceof Date
-                    ? formData.data.toISOString().split("T")[0]
+                  formData.data
+                    ? new Date(formData.data).toISOString().split("T")[0]
                     : ""
                 }
                 onChange={handleChange}
@@ -169,8 +207,9 @@ const ModalRegistro = ({ dataSelecionada, onClose, onSalvar }) => {
             </div>
 
             <div className="full-width">
-              <label>Editado por (opcional)</label>
+              <label htmlFor="editadoPor">Editado por (opcional)</label>
               <input
+                id="editadoPor"
                 name="editadoPor"
                 value={formData.editadoPor}
                 onChange={handleChange}
@@ -178,8 +217,9 @@ const ModalRegistro = ({ dataSelecionada, onClose, onSalvar }) => {
             </div>
 
             <div className="full-width">
-              <label>Observações (opcional)</label>
+              <label htmlFor="observacoes">Observações (opcional)</label>
               <textarea
+                id="observacoes"
                 name="observacoes"
                 value={formData.observacoes}
                 onChange={handleChange}
@@ -189,14 +229,10 @@ const ModalRegistro = ({ dataSelecionada, onClose, onSalvar }) => {
           </div>
 
           <div className="form-actions">
-            <button type="button" className="btn-cinza" onClick={onClose}>
+            <button type="button" className="btn-cinza" onClick={handleClose}>
               Cancelar
             </button>
-            <button
-              type="submit"
-              className="btn-roxo"
-              onClick={(e) => e.stopPropagation()}
-            >
+            <button type="submit" className="btn-roxo">
               Salvar
             </button>
           </div>

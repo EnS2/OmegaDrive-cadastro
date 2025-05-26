@@ -1,40 +1,54 @@
-/* Reset básico */
-body {
-  margin: 0;
-  padding: 0;
+/* ========================== */
+/* RESET E BASE */
+/* ========================== */
+* {
   box-sizing: border-box;
-  font-family: 'Segoe UI', sans-serif;
 }
 
-/* Container geral */
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  background-color: #fff;
+  color: #111827;
+}
+
+/* ========================== */
+/* CONTAINER GERAL */
+/* ========================== */
 .dashboard-container {
   display: flex;
   flex-direction: column;
-  background-color: #ffffff;
   min-height: 100vh;
+  width: 100%;
 }
 
-/* TOPO */
+/* ========================== */
+/* TOPO FIXO */
+/* ========================== */
 .top-bar {
-  width: 100vw;
-  background: linear-gradient(1035deg, #7b2ff7, #1e40af);
-  padding: 2rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  width: 100%;
+  background: linear-gradient(103.5deg, #7b2ff7, #1e40af);
+  padding: 2rem;
   display: flex;
-  justify-content: flex-start;
   align-items: center;
-  box-sizing: border-box;
   color: white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .branding-left {
   display: flex;
   align-items: center;
   gap: 1rem;
-  color: white;
 }
 
 .car-icon {
-  color: white;
   width: 40px;
   height: 40px;
 }
@@ -48,33 +62,46 @@ body {
   font-size: 1.5rem;
   font-weight: bold;
   margin: 0;
-  color: white;
 }
 
 .subtitle {
   font-size: 0.9rem;
   opacity: 0.9;
   margin: 0;
-  color: white;
 }
 
+/* ========================== */
+/* CONTEÚDO COM SCROLL */
+/* ========================== */
+.content-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* ========================== */
 /* CONTEÚDO PRINCIPAL */
+/* ========================== */
 .main-content {
   display: flex;
-  flex-direction: row;
-  padding: 2rem;
+  flex-wrap: wrap;
   gap: 2rem;
+  padding: 2rem;
+  width: 100%;
   align-items: flex-start;
 }
 
+/* ========================== */
 /* SIDEBAR */
+/* ========================== */
 .sidebar {
   flex: 0 0 340px;
   display: flex;
   flex-direction: column;
 }
 
-/* CARD UNIFICADO */
+/* ========================== */
+/* CALENDÁRIO + RESUMO */
+/* ========================== */
 .calendar-summary-card {
   background-color: #f9f9ff;
   border: 1px solid #e5e7eb;
@@ -86,7 +113,20 @@ body {
   gap: 2rem;
 }
 
+.calendar-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.calendar-date-info {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+/* ========================== */
 /* RESUMO DO DIA */
+/* ========================== */
 .resumo-container {
   display: flex;
   flex-direction: column;
@@ -96,7 +136,11 @@ body {
 .resumo-titulo {
   font-size: 1.1rem;
   font-weight: 600;
-  margin-bottom: 0.3rem;
+}
+
+.data-formatada {
+  font-size: 0.9rem;
+  color: #4b5563;
 }
 
 .resumo-dados {
@@ -116,22 +160,29 @@ body {
 
 .resumo-label {
   font-size: 0.85rem;
-  color: #6b7280;
+  color: #4b5563;
 }
 
 .resumo-valor {
   font-size: 1.2rem;
   font-weight: bold;
   margin-top: 0.3rem;
+  color: #6b21a8;
 }
 
-/* REGISTROS */
+/* ========================== */
+/* REGISTROS DO DIA */
+/* ========================== */
 .records-section {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 1rem;
   align-items: flex-end;
+  width: 100%;
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  padding-right: 0.5rem;
 }
 
 .records-title {
@@ -159,26 +210,31 @@ body {
   background: #6f23c9;
 }
 
-/* Lista de registros */
 .registros-do-dia {
   width: 100%;
   display: flex;
   flex-direction: column;
   gap: 1rem;
   padding-top: 1rem;
-  align-self: stretch;
 }
 
-/* Card de registro individual */
+/* ========================== */
+/* CARD DE REGISTRO */
+/* ========================== */
 .registro-card {
+  background-color: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
-  overflow: hidden;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-  background-color: #fff;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Cabeçalho do card com gradiente e nome do veículo */
+.registro-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
 .registro-header {
   background: linear-gradient(90deg, #7b2ff7, #1e40af);
   color: white;
@@ -189,13 +245,12 @@ body {
   align-items: center;
 }
 
-/* Corpo do card com dados */
 .registro-body {
   display: flex;
   justify-content: space-between;
-  padding: 1.25rem;
   flex-wrap: wrap;
   gap: 1.5rem;
+  padding: 1.25rem;
 }
 
 .dados-condutor {
@@ -207,13 +262,12 @@ body {
 }
 
 .dados-km {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 1rem;
   background-color: #f9fafb;
   border-radius: 10px;
   padding: 0.8rem 1rem;
-  flex: 1;
-  display: flex;
-  justify-content: space-around;
-  gap: 1rem;
 }
 
 .dados-km div {
@@ -231,6 +285,13 @@ body {
   margin: 0.2rem 0 0;
 }
 
+.observacoes {
+  color: #374151;
+}
+
+/* ========================== */
+/* BOTÕES DE AÇÃO */
+/* ========================== */
 .botoes {
   display: flex;
   flex-direction: column;
@@ -246,6 +307,10 @@ body {
   font-weight: 500;
   border: none;
   cursor: pointer;
+  min-width: 70px;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
 }
 
 .editar {
@@ -264,4 +329,34 @@ body {
 
 .excluir:hover {
   background-color: #fee2e2;
+}
+
+/* ========================== */
+/* RESPONSIVO */
+/* ========================== */
+@media (max-width: 768px) {
+  .main-content {
+    flex-direction: column;
+    padding: 1rem;
+  }
+
+  .sidebar {
+    width: 100%;
+  }
+
+  .records-section {
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  .registro-body {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .botoes {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 1rem;
+  }
 }
