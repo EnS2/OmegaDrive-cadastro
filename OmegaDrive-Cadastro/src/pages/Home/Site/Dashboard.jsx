@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Car, Plus } from "lucide-react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
@@ -18,6 +18,8 @@ const Dashboard = () => {
   const [registroEditando, setRegistroEditando] = useState(null);
   const [anotacao, setAnotacao] = useState("");
 
+  const debounceTimer = useRef(null);
+
   useEffect(() => {
     document.body.style.backgroundColor = "#ffffff";
     return () => {
@@ -32,12 +34,20 @@ const Dashboard = () => {
     setAnotacao(anotacaoSalva || "");
   }, [selectedDate]);
 
-  // Salvar anotação automaticamente
-  const handleAnotacaoChange = (e) => {
-    const novoTexto = e.target.value;
-    setAnotacao(novoTexto);
+  // Salvar anotação automaticamente com debounce
+  useEffect(() => {
     const chave = `anotacao-${selectedDate.toISOString().split("T")[0]}`;
-    localStorage.setItem(chave, novoTexto);
+
+    clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      localStorage.setItem(chave, anotacao);
+    }, 500);
+
+    return () => clearTimeout(debounceTimer.current);
+  }, [anotacao, selectedDate]);
+
+  const handleAnotacaoChange = (e) => {
+    setAnotacao(e.target.value);
   };
 
   // Carregar registros do localStorage ao iniciar
