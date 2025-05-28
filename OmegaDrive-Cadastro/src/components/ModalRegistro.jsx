@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import api from "../services/api"; // ajuste o caminho conforme sua estrutura
 
-const ModalRegistro = ({ dataSelecionada, onClose, onSalvar }) => {
+const ModalRegistro = ({ dataSelecionada, onClose }) => {
   const [formData, setFormData] = useState({
     condutor: "",
     rg: "",
@@ -20,30 +21,17 @@ const ModalRegistro = ({ dataSelecionada, onClose, onSalvar }) => {
   const [erros, setErros] = useState({});
 
   useEffect(() => {
-    const dadosSalvos = localStorage.getItem("registroTemporario");
-    if (dadosSalvos) {
-      const dadosParseados = JSON.parse(dadosSalvos);
-      setFormData({
-        ...dadosParseados,
-        data: new Date(dataSelecionada),
-      });
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        data: dataSelecionada,
-      }));
-    }
+    setFormData((prev) => ({
+      ...prev,
+      data: dataSelecionada,
+    }));
   }, [dataSelecionada]);
-
-  useEffect(() => {
-    localStorage.setItem("registroTemporario", JSON.stringify(formData));
-  }, [formData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "data" ? new Date(value) : value,
+      [name]: value,
     }));
   };
 
@@ -63,7 +51,6 @@ const ModalRegistro = ({ dataSelecionada, onClose, onSalvar }) => {
     ) {
       novosErros.kmFinal = "Km final não pode ser menor que o inicial.";
     }
-
     if (!formData.horaInicio) novosErros.horaInicio = "Informe a hora de início.";
     if (!formData.horaSaida) novosErros.horaSaida = "Informe a hora de saída.";
 
@@ -75,41 +62,35 @@ const ModalRegistro = ({ dataSelecionada, onClose, onSalvar }) => {
     return Object.keys(novosErros).length === 0;
   };
 
-  const handleClose = () => {
-    localStorage.removeItem("registroTemporario");
-    onClose();
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validar()) return;
 
-    onSalvar({
-      ...formData,
-      data: new Date(formData.data),
-      kmInicial: Number(formData.kmInicial),
-      kmFinal: Number(formData.kmFinal),
-    });
+    try {
+      const payload = {
+        rgCondutor: formData.rg,
+        dataMarcada: formData.data,
+        horaInicio: formData.horaInicio,
+        horaSaida: formData.horaSaida,
+        destino: formData.destino,
+        kmIda: parseFloat(formData.kmInicial),
+        kmVolta: parseFloat(formData.kmFinal),
+        observacao: formData.observacoes || null,
+        editadoPor: formData.editadoPor || null,
+        veiculo: formData.veiculo,
+        placa: formData.placa,
+      };
 
-    toast.success("Registro salvo com sucesso!");
-    localStorage.removeItem("registroTemporario");
+      await api.post("/registro/registrar", payload);
+      toast.success("Registro salvo com sucesso!");
+      onClose();
+    } catch (error) {
+      const mensagemErro = error.response?.data?.error || "Erro ao salvar registro.";
+      toast.error("Erro ao salvar: " + mensagemErro);
+    }
+  };
 
-    setFormData({
-      condutor: "",
-      rg: "",
-      veiculo: "",
-      placa: "",
-      destino: "",
-      kmInicial: "",
-      kmFinal: "",
-      horaInicio: "",
-      horaSaida: "",
-      data: dataSelecionada,
-      editadoPor: "",
-      observacoes: "",
-    });
-
-    setErros({});
+  const handleClose = () => {
     onClose();
   };
 
@@ -124,13 +105,11 @@ const ModalRegistro = ({ dataSelecionada, onClose, onSalvar }) => {
 
         <form className="form-registro" onSubmit={handleSubmit}>
           <div className="form-grid">
-            {[
-              { label: "Condutor", name: "condutor" },
-              { label: "RG", name: "rg" },
-              { label: "Veículo", name: "veiculo" },
-              { label: "Placa", name: "placa" },
-              { label: "Destino", name: "destino" },
-            ].map(({ label, name }) => (
+            {[{ label: "Condutor", name: "condutor" },
+            { label: "RG", name: "rg" },
+            { label: "Veículo", name: "veiculo" },
+            { label: "Placa", name: "placa" },
+            { label: "Destino", name: "destino" }].map(({ label, name }) => (
               <div key={name}>
                 <label htmlFor={name}>{label}</label>
                 <input
@@ -155,6 +134,7 @@ const ModalRegistro = ({ dataSelecionada, onClose, onSalvar }) => {
               />
               {erros.kmInicial && <small className="erro">{erros.kmInicial}</small>}
             </div>
+
             <div>
               <label htmlFor="kmFinal">Km Final</label>
               <input
@@ -179,6 +159,7 @@ const ModalRegistro = ({ dataSelecionada, onClose, onSalvar }) => {
               />
               {erros.horaInicio && <small className="erro">{erros.horaInicio}</small>}
             </div>
+
             <div>
               <label htmlFor="horaSaida">Hora de Saída</label>
               <input
@@ -197,11 +178,7 @@ const ModalRegistro = ({ dataSelecionada, onClose, onSalvar }) => {
                 id="data"
                 name="data"
                 type="date"
-                value={
-                  formData.data
-                    ? new Date(formData.data).toISOString().split("T")[0]
-                    : ""
-                }
+                value={formData.data ? new Date(formData.data).toISOString().split("T")[0] : ""}
                 onChange={handleChange}
               />
             </div>
