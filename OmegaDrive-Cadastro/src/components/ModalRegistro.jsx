@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import api from "../services/api"; // ajuste o caminho conforme sua estrutura
+import { salvarRegistro } from "../services/api";
 
-const ModalRegistro = ({ dataSelecionada, onClose }) => {
+const ModalRegistro = ({ registro, onClose, onSalvar }) => {
   const [formData, setFormData] = useState({
     condutor: "",
     rg: "",
@@ -13,7 +13,7 @@ const ModalRegistro = ({ dataSelecionada, onClose }) => {
     kmFinal: "",
     horaInicio: "",
     horaSaida: "",
-    data: dataSelecionada,
+    data: new Date().toISOString().split("T")[0],
     editadoPor: "",
     observacoes: "",
   });
@@ -21,22 +21,34 @@ const ModalRegistro = ({ dataSelecionada, onClose }) => {
   const [erros, setErros] = useState({});
 
   useEffect(() => {
-    setFormData((prev) => ({
-      ...prev,
-      data: dataSelecionada,
-    }));
-  }, [dataSelecionada]);
+    if (registro) {
+      setFormData({
+        condutor: registro.condutor || "",
+        rg: registro.rgCondutor || "",
+        veiculo: registro.veiculo || "",
+        placa: registro.placa || "",
+        destino: registro.destino || "",
+        kmInicial: registro.kmIda !== undefined ? registro.kmIda : "",
+        kmFinal: registro.kmVolta !== undefined ? registro.kmVolta : "",
+        horaInicio: registro.horaInicio || "",
+        horaSaida: registro.horaSaida || "",
+        data: registro.dataMarcada
+          ? new Date(registro.dataMarcada).toISOString().split("T")[0]
+          : new Date().toISOString().split("T")[0],
+        editadoPor: registro.editadoPor || "",
+        observacoes: registro.observacao || "",
+      });
+    }
+  }, [registro]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const validar = () => {
     const novosErros = {};
+
     if (!formData.condutor.trim()) novosErros.condutor = "Informe o condutor.";
     if (!formData.rg.trim()) novosErros.rg = "Informe o RG.";
     if (!formData.veiculo.trim()) novosErros.veiculo = "Informe o veículo.";
@@ -55,34 +67,43 @@ const ModalRegistro = ({ dataSelecionada, onClose }) => {
     if (!formData.horaSaida) novosErros.horaSaida = "Informe a hora de saída.";
 
     setErros(novosErros);
+
     if (Object.keys(novosErros).length > 0) {
       toast.error("Preencha os campos obrigatórios corretamente.");
+      return false;
     }
 
-    return Object.keys(novosErros).length === 0;
+    return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!validar()) return;
 
-    try {
-      const payload = {
-        rgCondutor: formData.rg,
-        dataMarcada: formData.data,
-        horaInicio: formData.horaInicio,
-        horaSaida: formData.horaSaida,
-        destino: formData.destino,
-        kmIda: parseFloat(formData.kmInicial),
-        kmVolta: parseFloat(formData.kmFinal),
-        observacao: formData.observacoes || null,
-        editadoPor: formData.editadoPor || null,
-        veiculo: formData.veiculo,
-        placa: formData.placa,
-      };
+    const payload = {
+      condutor: formData.condutor,
+      rgCondutor: formData.rg,
+      dataMarcada: formData.data,
+      horaInicio: formData.horaInicio,
+      horaSaida: formData.horaSaida,
+      destino: formData.destino,
+      kmIda: parseFloat(formData.kmInicial),
+      kmVolta: parseFloat(formData.kmFinal),
+      observacao: formData.observacoes || null,
+      editadoPor: formData.editadoPor || null,
+      veiculo: formData.veiculo,
+      placa: formData.placa,
+    };
 
-      await api.post("/registro/registrar", payload);
-      toast.success("Registro salvo com sucesso!");
+    try {
+      console.log("Enviando payload:", payload);
+
+      const resultado = await salvarRegistro(registro, payload);
+
+      toast.success(registro ? "Registro atualizado com sucesso!" : "Registro salvo com sucesso!");
+
+      if (onSalvar) onSalvar(resultado);
       onClose();
     } catch (error) {
       const mensagemErro = error.response?.data?.error || "Erro ao salvar registro.";
@@ -90,26 +111,25 @@ const ModalRegistro = ({ dataSelecionada, onClose }) => {
     }
   };
 
-  const handleClose = () => {
-    onClose();
-  };
-
   return (
-    <div className="modal-overlay" onClick={handleClose}>
+    <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="close-button" onClick={handleClose}>
+        <button className="close-button" onClick={onClose} aria-label="Fechar modal">
           &times;
         </button>
-        <h2 className="modal-title">Novo Registro</h2>
+
+        <h2 className="modal-title">{registro ? "Editar Registro" : "Novo Registro"}</h2>
         <p className="modal-subtitle">Preencha os dados da viagem</p>
 
-        <form className="form-registro" onSubmit={handleSubmit}>
+        <form className="form-registro" onSubmit={handleSubmit} noValidate>
           <div className="form-grid">
-            {[{ label: "Condutor", name: "condutor" },
-            { label: "RG", name: "rg" },
-            { label: "Veículo", name: "veiculo" },
-            { label: "Placa", name: "placa" },
-            { label: "Destino", name: "destino" }].map(({ label, name }) => (
+            {[
+              { label: "Condutor", name: "condutor" },
+              { label: "RG", name: "rg" },
+              { label: "Veículo", name: "veiculo" },
+              { label: "Placa", name: "placa" },
+              { label: "Destino", name: "destino" },
+            ].map(({ label, name }) => (
               <div key={name}>
                 <label htmlFor={name}>{label}</label>
                 <input
@@ -117,8 +137,14 @@ const ModalRegistro = ({ dataSelecionada, onClose }) => {
                   name={name}
                   value={formData[name]}
                   onChange={handleChange}
+                  aria-invalid={!!erros[name]}
+                  aria-describedby={erros[name] ? `${name}-error` : undefined}
                 />
-                {erros[name] && <small className="erro">{erros[name]}</small>}
+                {erros[name] && (
+                  <small id={`${name}-error`} className="erro" role="alert">
+                    {erros[name]}
+                  </small>
+                )}
               </div>
             ))}
 
@@ -131,8 +157,14 @@ const ModalRegistro = ({ dataSelecionada, onClose }) => {
                 min="0"
                 value={formData.kmInicial}
                 onChange={handleChange}
+                aria-invalid={!!erros.kmInicial}
+                aria-describedby={erros.kmInicial ? "kmInicial-error" : undefined}
               />
-              {erros.kmInicial && <small className="erro">{erros.kmInicial}</small>}
+              {erros.kmInicial && (
+                <small id="kmInicial-error" className="erro" role="alert">
+                  {erros.kmInicial}
+                </small>
+              )}
             </div>
 
             <div>
@@ -144,8 +176,14 @@ const ModalRegistro = ({ dataSelecionada, onClose }) => {
                 min="0"
                 value={formData.kmFinal}
                 onChange={handleChange}
+                aria-invalid={!!erros.kmFinal}
+                aria-describedby={erros.kmFinal ? "kmFinal-error" : undefined}
               />
-              {erros.kmFinal && <small className="erro">{erros.kmFinal}</small>}
+              {erros.kmFinal && (
+                <small id="kmFinal-error" className="erro" role="alert">
+                  {erros.kmFinal}
+                </small>
+              )}
             </div>
 
             <div>
@@ -156,8 +194,14 @@ const ModalRegistro = ({ dataSelecionada, onClose }) => {
                 type="time"
                 value={formData.horaInicio}
                 onChange={handleChange}
+                aria-invalid={!!erros.horaInicio}
+                aria-describedby={erros.horaInicio ? "horaInicio-error" : undefined}
               />
-              {erros.horaInicio && <small className="erro">{erros.horaInicio}</small>}
+              {erros.horaInicio && (
+                <small id="horaInicio-error" className="erro" role="alert">
+                  {erros.horaInicio}
+                </small>
+              )}
             </div>
 
             <div>
@@ -168,8 +212,14 @@ const ModalRegistro = ({ dataSelecionada, onClose }) => {
                 type="time"
                 value={formData.horaSaida}
                 onChange={handleChange}
+                aria-invalid={!!erros.horaSaida}
+                aria-describedby={erros.horaSaida ? "horaSaida-error" : undefined}
               />
-              {erros.horaSaida && <small className="erro">{erros.horaSaida}</small>}
+              {erros.horaSaida && (
+                <small id="horaSaida-error" className="erro" role="alert">
+                  {erros.horaSaida}
+                </small>
+              )}
             </div>
 
             <div className="full-width">
@@ -178,7 +228,7 @@ const ModalRegistro = ({ dataSelecionada, onClose }) => {
                 id="data"
                 name="data"
                 type="date"
-                value={formData.data ? new Date(formData.data).toISOString().split("T")[0] : ""}
+                value={formData.data}
                 onChange={handleChange}
               />
             </div>
@@ -201,12 +251,13 @@ const ModalRegistro = ({ dataSelecionada, onClose }) => {
                 value={formData.observacoes}
                 onChange={handleChange}
                 placeholder="Digite anotações ou informações adicionais..."
+                rows={4}
               />
             </div>
           </div>
 
           <div className="form-actions">
-            <button type="button" className="btn-cinza" onClick={handleClose}>
+            <button type="button" className="btn-cinza" onClick={onClose}>
               Cancelar
             </button>
             <button type="submit" className="btn-roxo">

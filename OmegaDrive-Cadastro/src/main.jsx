@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom/client';
-
-import Login from './pages/Home/Login/index.jsx';
+import Login from './pages/Home/Login/Index.jsx';
 import Cadastro from './pages/Home/Cadastro/Index.jsx';
 import Home from './pages/Home/Site/Dashboard.jsx';
 
