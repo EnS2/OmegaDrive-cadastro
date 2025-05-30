@@ -1,5 +1,33 @@
 // RegistroCard.jsx
-const RegistroCard = ({ registros }) => {
+import { useEffect, useState } from "react";
+import axios from "axios";
+
+const RegistroCard = () => {
+    const [registros, setRegistros] = useState([]);
+
+    useEffect(() => {
+        const buscarRegistros = async () => {
+            try {
+                const response = await axios.get("http://localhost:3001/api/registros");
+
+                const dados = response.data.map((item) => ({
+                    veiculo: item.veiculo,
+                    data: new Date(item.dataMarcada).toLocaleDateString("pt-BR"),
+                    nome: item.condutor,
+                    rg: item.rgCondutor,
+                    kmInicial: item.kmIda,
+                    kmFinal: item.kmVolta,
+                }));
+
+                setRegistros(dados);
+            } catch (error) {
+                console.error("Erro ao buscar registros:", error);
+            }
+        };
+
+        buscarRegistros();
+    }, []);
+
     return (
         <div className="registros-do-dia">
             {registros.map((registro, index) => (
@@ -11,7 +39,9 @@ const RegistroCard = ({ registros }) => {
 
                     <div className="registro-body">
                         <div className="dados-condutor">
-                            <p>📄 Registrado por: <strong>{registro.nome}</strong></p>
+                            <p>
+                                📄 Registrado por: <strong>{registro.nome}</strong>
+                            </p>
                             <p>RG: {registro.rg}</p>
                         </div>
 
@@ -42,4 +72,5 @@ const RegistroCard = ({ registros }) => {
 };
 
 export default RegistroCard;
+
 

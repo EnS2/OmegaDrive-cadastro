@@ -48,13 +48,19 @@ const Dashboard = () => {
     async function carregarRegistros() {
       try {
         const dataISO = formatISODate(selectedDate);
+        const token = localStorage.getItem("token");
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+
         const res = await axios.get(`${API_BASE}/registros`, {
           params: { data: dataISO },
+          ...config,
         });
+
         const registros = res.data.map((r) => ({
           ...r,
           data: new Date(r.data),
         }));
+
         setTodosRegistros(registros);
       } catch (e) {
         console.error(e);
@@ -89,24 +95,43 @@ const Dashboard = () => {
     return () => clearTimeout(debounceTimer.current);
   }, [anotacao, selectedDate]);
 
-  const handleSalvarModal = async (registro) => {
-    try {
-      const dataCorrigida = new Date(registro.data);
-      dataCorrigida.setHours(0, 0, 0, 0);
-      const registroFinal = { ...registro, data: dataCorrigida };
+  const validarRegistro = (registro) => {
+    if (!registro.veiculo || !registro.condutor || !registro.kmInicial || !registro.kmFinal) {
+      toast.error("Preencha todos os campos obrigatórios: veículo, condutor e km.");
+      return false;
+    }
+    return true;
+  };
 
-      let res;
+  const salvarRegistro = async (registro) => {
+    const dataCorrigida = new Date(registro.data);
+    dataCorrigida.setHours(0, 0, 0, 0);
+    const registroFinal = { ...registro, data: dataCorrigida };
+
+    const token = localStorage.getItem("token");
+    const config = { headers: { Authorization: `Bearer ${token}` } };
+
+    if (registroEditando) {
+      return await axios.put(`${API_BASE}/registros/${registroFinal.id}`, registroFinal, config);
+    } else {
+      return await axios.post(`${API_BASE}/registros`, registroFinal, config);
+    }
+  };
+
+  const handleSalvarModal = async (registro) => {
+    if (!validarRegistro(registro)) return;
+
+    try {
+      const res = await salvarRegistro(registro);
+      const atualizado = { ...res.data, data: new Date(res.data.data) };
+
       if (registroEditando) {
-        res = await axios.put(`${API_BASE}/registros/${registroFinal.id}`, registroFinal);
-        const atualizado = { ...res.data, data: new Date(res.data.data) };
         setTodosRegistros((prev) =>
           prev.map((r) => (r.id === atualizado.id ? atualizado : r))
         );
         toast.success("Registro editado com sucesso.");
       } else {
-        res = await axios.post(`${API_BASE}/registros`, registroFinal);
-        const novoRegistro = { ...res.data, data: new Date(res.data.data) };
-        setTodosRegistros((prev) => [...prev, novoRegistro]);
+        setTodosRegistros((prev) => [...prev, atualizado]);
         toast.success("Registro adicionado com sucesso.");
       }
 
@@ -121,7 +146,10 @@ const Dashboard = () => {
   const handleExcluir = async (id) => {
     if (!window.confirm("Tem certeza que deseja excluir este registro?")) return;
     try {
-      await axios.delete(`${API_BASE}/registros/${id}`);
+      const token = localStorage.getItem("token");
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+
+      await axios.delete(`${API_BASE}/registros/${id}`, config);
       setTodosRegistros((prev) => prev.filter((r) => r.id !== id));
       toast.success("Registro excluído com sucesso.");
     } catch (e) {
