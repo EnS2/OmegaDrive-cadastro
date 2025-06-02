@@ -36,7 +36,7 @@ const ModalRegistro = ({ registro, onClose, onSalvar }) => {
           ? new Date(registro.dataMarcada).toISOString().split("T")[0]
           : new Date().toISOString().split("T")[0],
         editadoPor: registro.editadoPor || "",
-        observacoes: registro.observacao || "",
+        observacoes: registro.observacoes || "",  // ✅ Alterado para "observacoes"
       });
     }
   }, [registro]);
@@ -90,7 +90,7 @@ const ModalRegistro = ({ registro, onClose, onSalvar }) => {
       destino: formData.destino,
       kmIda: parseFloat(formData.kmInicial),
       kmVolta: parseFloat(formData.kmFinal),
-      observacao: formData.observacoes || null,
+      observacoes: formData.observacoes || null,   // ✅ Usando "observacoes"
       editadoPor: formData.editadoPor || null,
       veiculo: formData.veiculo,
       placa: formData.placa,

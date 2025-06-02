@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Car, Plus } from "lucide-react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
@@ -19,58 +19,41 @@ const Dashboard = () => {
   const [totalViagens, setTotalViagens] = useState(0);
   const [kmTotal, setKmTotal] = useState(0);
   const [registroEditando, setRegistroEditando] = useState(null);
-  const [anotacao, setAnotacao] = useState("");
-
-  const debounceTimer = useRef(null);
 
   useEffect(() => {
     document.body.style.backgroundColor = "#ffffff";
-    return () => {
-      document.body.style.backgroundColor = "";
-    };
+    return () => { document.body.style.backgroundColor = ""; };
   }, []);
 
-  const formatISODate = (data) => {
-    const ano = data.getFullYear();
-    const mes = String(data.getMonth() + 1).padStart(2, "0");
-    const dia = String(data.getDate()).padStart(2, "0");
-    return `${ano}-${mes}-${dia}`;
-  };
+  // Formata data para ISO
+  const formatISODate = (data) =>
+    `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, "0")}-${String(data.getDate()).padStart(2, "0")}`;
 
+  // Formata data para exibição em português
   const formatarData = (data) =>
-    data.toLocaleDateString("pt-BR", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-    });
+    data.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
 
+  // Carrega registros da data selecionada
   useEffect(() => {
-    async function carregarRegistros() {
+    const carregarRegistros = async () => {
       try {
         const dataISO = formatISODate(selectedDate);
         const token = localStorage.getItem("token");
         const config = { headers: { Authorization: `Bearer ${token}` } };
 
-        const res = await axios.get(`${API_BASE}/registros`, {
-          params: { data: dataISO },
-          ...config,
-        });
-
-        const registros = res.data.map((r) => ({
-          ...r,
-          data: new Date(r.data),
-        }));
-
+        const res = await axios.get(`${API_BASE}/registros`, { params: { data: dataISO }, ...config });
+        const registros = res.data.map((r) => ({ ...r, data: new Date(r.data) }));
         setTodosRegistros(registros);
       } catch (e) {
         console.error(e);
         toast.error("Erro ao carregar registros do servidor");
         setTodosRegistros([]);
       }
-    }
+    };
     carregarRegistros();
   }, [selectedDate]);
 
+  // Calcula total de viagens e km
   useEffect(() => {
     setTotalViagens(todosRegistros.length);
     const totalKm = todosRegistros.reduce((soma, r) => {
@@ -80,29 +63,17 @@ const Dashboard = () => {
     setKmTotal(totalKm);
   }, [todosRegistros]);
 
-  useEffect(() => {
-    const chave = `anotacao-${formatISODate(selectedDate)}`;
-    const anotacaoSalva = localStorage.getItem(chave);
-    setAnotacao(anotacaoSalva || "");
-  }, [selectedDate]);
-
-  useEffect(() => {
-    const chave = `anotacao-${formatISODate(selectedDate)}`;
-    clearTimeout(debounceTimer.current);
-    debounceTimer.current = setTimeout(() => {
-      localStorage.setItem(chave, anotacao);
-    }, 500);
-    return () => clearTimeout(debounceTimer.current);
-  }, [anotacao, selectedDate]);
-
+  // Valida dados obrigatórios do registro
   const validarRegistro = (registro) => {
-    if (!registro.veiculo || !registro.condutor || !registro.kmInicial || !registro.kmFinal) {
+    const { veiculo, condutor, kmInicial, kmFinal } = registro;
+    if (!veiculo || !condutor || !kmInicial || !kmFinal) {
       toast.error("Preencha todos os campos obrigatórios: veículo, condutor e km.");
       return false;
     }
     return true;
   };
 
+  // Função genérica de salvar (criar ou editar)
   const salvarRegistro = async (registro) => {
     const dataCorrigida = new Date(registro.data);
     dataCorrigida.setHours(0, 0, 0, 0);
@@ -126,9 +97,7 @@ const Dashboard = () => {
       const atualizado = { ...res.data, data: new Date(res.data.data) };
 
       if (registroEditando) {
-        setTodosRegistros((prev) =>
-          prev.map((r) => (r.id === atualizado.id ? atualizado : r))
-        );
+        setTodosRegistros((prev) => prev.map((r) => (r.id === atualizado.id ? atualizado : r)));
         toast.success("Registro editado com sucesso.");
       } else {
         setTodosRegistros((prev) => [...prev, atualizado]);
@@ -145,6 +114,7 @@ const Dashboard = () => {
 
   const handleExcluir = async (id) => {
     if (!window.confirm("Tem certeza que deseja excluir este registro?")) return;
+
     try {
       const token = localStorage.getItem("token");
       const config = { headers: { Authorization: `Bearer ${token}` } };
@@ -157,8 +127,6 @@ const Dashboard = () => {
       toast.error("Erro ao excluir registro.");
     }
   };
-
-  const registrosDoDia = todosRegistros;
 
   return (
     <div className="dashboard-container">
@@ -178,7 +146,11 @@ const Dashboard = () => {
             <div className="calendar-wrapper">
               <h3>Calendário</h3>
               <span>{formatarData(selectedDate)}</span>
-              <Calendar onChange={setSelectedDate} value={selectedDate} locale="pt-BR" />
+              <Calendar
+                onChange={setSelectedDate}
+                value={selectedDate}
+                locale="pt-BR"
+              />
             </div>
 
             <div className="resumo-container">
@@ -200,48 +172,21 @@ const Dashboard = () => {
           <div className="registros-do-dia">
             <h3>Registros do Dia</h3>
 
-            {registrosDoDia.length === 0 && !anotacao && (
+            {todosRegistros.length === 0 ? (
               <p>Nenhum registro para esta data.</p>
+            ) : (
+              todosRegistros.map((r) => (
+                <RegistroCard
+                  key={r.id}
+                  registro={r}
+                  onEditar={() => {
+                    setRegistroEditando(r);
+                    setMostrarModal(true);
+                  }}
+                  onExcluir={() => handleExcluir(r.id)}
+                />
+              ))
             )}
-
-            {anotacao && (
-              <div
-                className="registro-card anotacao-card"
-                style={{
-                  border: "2px solid #4a00e0",
-                  backgroundColor: "#f0eaff",
-                  marginBottom: "1rem",
-                  padding: "1rem",
-                  borderRadius: "8px",
-                }}
-              >
-                <strong>Anotação do dia:</strong>
-                <p>{anotacao}</p>
-              </div>
-            )}
-
-            {registrosDoDia.map((r) => (
-              <RegistroCard
-                key={r.id}
-                registro={r}
-                onEditar={() => {
-                  setRegistroEditando(r);
-                  setMostrarModal(true);
-                }}
-                onExcluir={() => handleExcluir(r.id)}
-              />
-            ))}
-          </div>
-
-          <div className="anotacoes-section">
-            <h3>Anotações do Dia</h3>
-            <textarea
-              className="anotacoes-textarea"
-              placeholder="Escreva aqui suas anotações..."
-              value={anotacao}
-              onChange={(e) => setAnotacao(e.target.value)}
-              rows={5}
-            />
           </div>
         </section>
       </div>
@@ -274,23 +219,19 @@ const RegistroCard = ({ registro, onEditar, onExcluir }) => (
       <span>🚗 {registro.veiculo}</span>
       <span>📅 {new Date(registro.data).toLocaleDateString()}</span>
     </div>
+
     <div className="registro-body">
       <div className="dados-condutor">
         <small>📝 {registro.condutor}</small>
         {registro.editadoPor && <small>✏️ {registro.editadoPor}</small>}
         <small>RG: {registro.rg}</small>
-        <p>
-          <strong>Destino:</strong> {registro.destino}
-        </p>
-        <p>
-          <strong>Horário:</strong> {registro.horaInicio} → {registro.horaSaida}
-        </p>
+        <p><strong>Destino:</strong> {registro.destino}</p>
+        <p><strong>Horário:</strong> {registro.horaInicio} → {registro.horaSaida}</p>
         {registro.observacoes && (
-          <p>
-            <strong>Observações:</strong> {registro.observacoes}
-          </p>
+          <p><strong>Observações:</strong> {registro.observacoes}</p>
         )}
       </div>
+
       <div className="dados-km">
         <div>
           <strong>Inicial</strong>
@@ -307,13 +248,10 @@ const RegistroCard = ({ registro, onEditar, onExcluir }) => (
           </p>
         </div>
       </div>
+
       <div className="botoes">
-        <button className="editar" onClick={onEditar}>
-          ✏️ Editar
-        </button>
-        <button className="excluir" onClick={onExcluir}>
-          🗑️ Excluir
-        </button>
+        <button className="editar" onClick={onEditar}>✏️ Editar</button>
+        <button className="excluir" onClick={onExcluir}>🗑️ Excluir</button>
       </div>
     </div>
   </div>
