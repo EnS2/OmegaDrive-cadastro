@@ -18,13 +18,22 @@ export default defineConfig({
       "@assets": path.resolve(__dirname, "src/assets"),
       "@layout": path.resolve(__dirname, "src/layout"),
       "@motion": path.resolve(__dirname, "src/motion"),
-      // Adicione outros atalhos se necessário
     },
-    extensions: [".js", ".jsx", ".ts", ".tsx", ".json"], // ajuda na resolução automática
+    extensions: [".js", ".jsx", ".ts", ".tsx", ".json"],
   },
   server: {
-    port: 5173, // Porta customizada
-    open: true, // Abre o navegador automaticamente
-    strictPort: true, // Se a porta 5173 estiver ocupada, erro em vez de escolher outra
+    port: 5173,
+    open: true,
+    strictPort: true,
+    proxy: {
+      // Proxy para encaminhar requisições /api para backend Express na porta 4000
+      "/api": {
+        target: "http://localhost:4000",
+        changeOrigin: true,
+        secure: false,
+        // rewrite remove o /api do caminho para combinar com as rotas do backend
+        rewrite: (path) => path.replace(/^\/api/, ""),
+      },
+    },
   },
 });
