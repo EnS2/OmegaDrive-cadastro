@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "/api";
+const BASE_URL = "/api"; // Proxy do Vite redireciona para o backend
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -80,9 +80,9 @@ export const deletarRegistro = async (id) => {
   }
 };
 
-export const login = async ({ email, senha }) => {
+export const login = async ({ email, password }) => {
   try {
-    const response = await api.post("/auth/login", { email, senha });
+    const response = await api.post("/login", { email, password });
     return response.data;
   } catch (error) {
     console.error("Erro no login:", error.response?.data || error.message);
@@ -90,9 +90,9 @@ export const login = async ({ email, senha }) => {
   }
 };
 
-export const cadastrar = async ({ nome, email, senha }) => {
+export const cadastrar = async ({ name, email, password }) => {
   try {
-    const response = await api.post("/auth/register", { nome, email, senha });
+    const response = await api.post("/cadastro", { name, email, password });
     return response.data;
   } catch (error) {
     console.error("Erro no cadastro:", error.response?.data || error.message);

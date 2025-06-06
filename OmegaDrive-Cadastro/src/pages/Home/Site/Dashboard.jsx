@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import ModalRegistro from "@/components/ModalRegistro";
 
-const API_BASE = "/api/registrar";
+const API_BASE = "/registrar";
 
 
 const Dashboard = () => {
