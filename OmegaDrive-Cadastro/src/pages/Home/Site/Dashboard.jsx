@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from "react";
 import { Car, Plus } from "lucide-react";
 import Calendar from "react-calendar";
@@ -11,7 +10,8 @@ import { toast } from "sonner";
 import axios from "axios";
 import ModalRegistro from "@/components/ModalRegistro";
 
-const API_BASE = "/api";
+const API_BASE = "/api/registrar";
+
 
 const Dashboard = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -21,7 +21,6 @@ const Dashboard = () => {
   const [kmTotal, setKmTotal] = useState(0);
   const [registroEditando, setRegistroEditando] = useState(null);
   const [nomeUsuario, setNomeUsuario] = useState("");
-  const [loading, setLoading] = useState(false); // ✅ ADICIONADO
 
   useEffect(() => {
     document.body.style.backgroundColor = "#ffffff";
@@ -40,55 +39,49 @@ const Dashboard = () => {
       month: "long",
     });
 
-  const carregarRegistros = async (data) => {
-    setLoading(true); // ✅ ADICIONADO
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        toast.error("Usuário não autenticado");
-        setTodosRegistros([]);
-        return;
-      }
-
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.get(`${API_BASE}/registros`, config);
-
-      if (!Array.isArray(res.data)) {
-        toast.error("Erro ao carregar registros: resposta inesperada.");
-        setTodosRegistros([]);
-        return;
-      }
-
-      const registros = res.data.map((r) => ({ ...r, data: new Date(r.data) }));
-      console.log("Registros recebidos:", registros);
-
-      const dataISO = formatISODate(data);
-
-      const filtrados = registros.filter(
-        (r) => formatISODate(r.data) === dataISO
-      );
-
-      console.log("Registros filtrados:", filtrados, "para data:", dataISO);
-
-      setTodosRegistros(filtrados);
-
-      if (filtrados.length > 0 && filtrados[0].nome) {
-        setNomeUsuario(filtrados[0].nome);
-      } else {
-        setNomeUsuario("");
-      }
-    } catch (e) {
-      console.error(e);
-      toast.error("Erro ao carregar registros do servidor");
-      setTodosRegistros([]);
-    } finally {
-      setLoading(false); // ✅ ADICIONADO
-    }
-  };
-
   useEffect(() => {
-    carregarRegistros(selectedDate);
-  }, [carregarRegistros, selectedDate]);
+    const carregarRegistros = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          toast.error("Usuário não autenticado");
+          setTodosRegistros([]);
+          return;
+        }
+
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        const res = await axios.get(`${API_BASE}`, config);
+
+        if (!Array.isArray(res.data)) {
+          console.error("Resposta inválida da API:", res.data);
+          toast.error("Erro ao carregar registros: resposta inesperada.");
+          setTodosRegistros([]);
+          return;
+        }
+
+        const registros = res.data.map((r) => ({ ...r, data: new Date(r.data) }));
+        const dataSelecionadaISO = formatISODate(selectedDate);
+
+        const registrosFiltrados = registros.filter(
+          (r) => formatISODate(new Date(r.data)) === dataSelecionadaISO
+        );
+
+        setTodosRegistros(registrosFiltrados);
+
+        if (registrosFiltrados.length > 0 && registrosFiltrados[0].nome) {
+          setNomeUsuario(registrosFiltrados[0].nome);
+        } else {
+          setNomeUsuario("");
+        }
+      } catch (e) {
+        console.error(e);
+        toast.error("Erro ao carregar registros do servidor");
+        setTodosRegistros([]);
+      }
+    };
+
+    carregarRegistros();
+  }, [selectedDate]);
 
   useEffect(() => {
     setTotalViagens(todosRegistros.length);
@@ -102,26 +95,38 @@ const Dashboard = () => {
   }, [todosRegistros]);
 
   const validarRegistro = (registro) => {
-    const { veiculo, condutor, kmInicial, kmFinal } = registro;
-    if (!veiculo || !condutor || !kmInicial || !kmFinal) {
-      toast.error("Preencha todos os campos obrigatórios: veículo, condutor e km.");
+    const { veiculo, condutor, kmInicial, kmFinal, horaSaida } = registro;
+    if (!veiculo || !condutor || !kmInicial || !kmFinal || !horaSaida) {
+      toast.error("Preencha todos os campos obrigatórios: veículo, condutor, km, hora de saída.");
       return false;
     }
     return true;
   };
 
   const salvarRegistro = async (registro) => {
-    const dataCorrigida = new Date(registro.data);
-    dataCorrigida.setHours(0, 0, 0, 0);
-    const registroFinal = { ...registro, data: dataCorrigida };
+    const dataMarcada = new Date(registro.data);
+    dataMarcada.setHours(0, 0, 0, 0);
+
+    const registroFinal = {
+      dataMarcada: dataMarcada.toISOString(),
+      horaInicio: registro.horaInicio || null,
+      horaSaida: registro.horaSaida,
+      destino: registro.destino || null,
+      kmIda: parseFloat(registro.kmInicial),
+      kmVolta: parseFloat(registro.kmFinal),
+      observacao: registro.observacoes || null,
+      veiculo: registro.veiculo,
+      placa: registro.placa,
+      rgCondutor: registro.rg || "",
+    };
 
     const token = localStorage.getItem("token");
     const config = { headers: { Authorization: `Bearer ${token}` } };
 
     if (registroEditando) {
-      return await axios.put(`${API_BASE}/registros/${registroFinal.id}`, registroFinal, config);
+      return await axios.put(`${API_BASE}/${registro.id}`, registroFinal, config);
     } else {
-      return await axios.post(`${API_BASE}/registros`, registroFinal, config);
+      return await axios.post(`${API_BASE}`, registroFinal, config);
     }
   };
 
@@ -129,13 +134,19 @@ const Dashboard = () => {
     if (!validarRegistro(registro)) return;
 
     try {
-      await salvarRegistro(registro);
-      toast.success(registroEditando ? "Registro editado com sucesso." : "Registro adicionado com sucesso.");
+      const res = await salvarRegistro(registro);
+      const atualizado = { ...res.data, data: new Date(res.data.dataMarcada) };
+
+      if (registroEditando) {
+        setTodosRegistros((prev) => prev.map((r) => (r.id === atualizado.id ? atualizado : r)));
+        toast.success("Registro editado com sucesso.");
+      } else {
+        setTodosRegistros((prev) => [...prev, atualizado]);
+        toast.success("Registro adicionado com sucesso.");
+      }
 
       setMostrarModal(false);
       setRegistroEditando(null);
-
-      carregarRegistros(selectedDate);
     } catch (e) {
       console.error(e);
       toast.error("Erro ao salvar registro.");
@@ -149,10 +160,9 @@ const Dashboard = () => {
       const token = localStorage.getItem("token");
       const config = { headers: { Authorization: `Bearer ${token}` } };
 
-      await axios.delete(`${API_BASE}/registros/${id}`, config);
+      await axios.delete(`${API_BASE}/${id}`, config);
+      setTodosRegistros((prev) => prev.filter((r) => r.id !== id));
       toast.success("Registro excluído com sucesso.");
-
-      carregarRegistros(selectedDate);
     } catch (e) {
       console.error(e);
       toast.error("Erro ao excluir registro.");
@@ -209,9 +219,7 @@ const Dashboard = () => {
           <div className="registros-do-dia">
             <h3>Registros do Dia</h3>
 
-            {loading ? ( // ✅ ADICIONADO
-              <p>Carregando registros...</p>
-            ) : todosRegistros.length === 0 ? (
+            {todosRegistros.length === 0 ? (
               <p>Nenhum registro para esta data.</p>
             ) : (
               todosRegistros.map((r) => (
@@ -301,3 +309,5 @@ const RegistroCard = ({ registro, onEditar, onExcluir }) => (
 );
 
 export default Dashboard;
+
+

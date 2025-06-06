@@ -26,12 +26,10 @@ export default defineConfig({
     open: true,
     strictPort: true,
     proxy: {
-      // Proxy para encaminhar requisições /api para backend Express na porta 4000
       "/api": {
         target: "http://localhost:4000",
         changeOrigin: true,
         secure: false,
-        // rewrite remove o /api do caminho para combinar com as rotas do backend
         rewrite: (path) => path.replace(/^\/api/, ""),
       },
     },

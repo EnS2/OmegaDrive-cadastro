@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { salvarRegistro } from "../services/api";
 
-const ModalRegistro = ({ registro, onClose, onSalvar }) => {
+const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
   const [formData, setFormData] = useState({
     condutor: "",
     rg: "",
@@ -13,7 +12,7 @@ const ModalRegistro = ({ registro, onClose, onSalvar }) => {
     kmFinal: "",
     horaInicio: "",
     horaSaida: "",
-    data: new Date().toISOString().split("T")[0],
+    data: new Date(dataSelecionada).toISOString().split("T")[0],
     editadoPor: "",
     observacoes: "",
   });
@@ -34,12 +33,17 @@ const ModalRegistro = ({ registro, onClose, onSalvar }) => {
         horaSaida: registro.horaSaida || "",
         data: registro.dataMarcada
           ? new Date(registro.dataMarcada).toISOString().split("T")[0]
-          : new Date().toISOString().split("T")[0],
+          : new Date(dataSelecionada).toISOString().split("T")[0],
         editadoPor: registro.editadoPor || "",
-        observacoes: registro.observacoes || "",  // ✅ Alterado para "observacoes"
+        observacoes: registro.observacoes || "",
       });
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        data: new Date(dataSelecionada).toISOString().split("T")[0],
+      }));
     }
-  }, [registro]);
+  }, [registro, dataSelecionada]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -76,12 +80,13 @@ const ModalRegistro = ({ registro, onClose, onSalvar }) => {
     return true;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     if (!validar()) return;
 
     const payload = {
+      id: registro?.id || null,
       condutor: formData.condutor,
       rgCondutor: formData.rg,
       dataMarcada: formData.data,
@@ -90,20 +95,15 @@ const ModalRegistro = ({ registro, onClose, onSalvar }) => {
       destino: formData.destino,
       kmIda: parseFloat(formData.kmInicial),
       kmVolta: parseFloat(formData.kmFinal),
-      observacoes: formData.observacoes || null,   // ✅ Usando "observacoes"
+      observacoes: formData.observacoes || null,
       editadoPor: formData.editadoPor || null,
       veiculo: formData.veiculo,
       placa: formData.placa,
     };
 
     try {
-      console.log("Enviando payload:", payload);
-
-      const resultado = await salvarRegistro(registro, payload);
-
+      if (onSalvar) onSalvar(payload);
       toast.success(registro ? "Registro atualizado com sucesso!" : "Registro salvo com sucesso!");
-
-      if (onSalvar) onSalvar(resultado);
       onClose();
     } catch (error) {
       const mensagemErro = error.response?.data?.error || "Erro ao salvar registro.";
@@ -123,15 +123,9 @@ const ModalRegistro = ({ registro, onClose, onSalvar }) => {
 
         <form className="form-registro" onSubmit={handleSubmit} noValidate>
           <div className="form-grid">
-            {[
-              { label: "Condutor", name: "condutor" },
-              { label: "RG", name: "rg" },
-              { label: "Veículo", name: "veiculo" },
-              { label: "Placa", name: "placa" },
-              { label: "Destino", name: "destino" },
-            ].map(({ label, name }) => (
+            {["condutor", "rg", "veiculo", "placa", "destino"].map((name) => (
               <div key={name}>
-                <label htmlFor={name}>{label}</label>
+                <label htmlFor={name}>{name[0].toUpperCase() + name.slice(1)}</label>
                 <input
                   id={name}
                   name={name}
@@ -148,79 +142,31 @@ const ModalRegistro = ({ registro, onClose, onSalvar }) => {
               </div>
             ))}
 
-            <div>
-              <label htmlFor="kmInicial">Km Inicial</label>
-              <input
-                id="kmInicial"
-                name="kmInicial"
-                type="number"
-                min="0"
-                value={formData.kmInicial}
-                onChange={handleChange}
-                aria-invalid={!!erros.kmInicial}
-                aria-describedby={erros.kmInicial ? "kmInicial-error" : undefined}
-              />
-              {erros.kmInicial && (
-                <small id="kmInicial-error" className="erro" role="alert">
-                  {erros.kmInicial}
-                </small>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="kmFinal">Km Final</label>
-              <input
-                id="kmFinal"
-                name="kmFinal"
-                type="number"
-                min="0"
-                value={formData.kmFinal}
-                onChange={handleChange}
-                aria-invalid={!!erros.kmFinal}
-                aria-describedby={erros.kmFinal ? "kmFinal-error" : undefined}
-              />
-              {erros.kmFinal && (
-                <small id="kmFinal-error" className="erro" role="alert">
-                  {erros.kmFinal}
-                </small>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="horaInicio">Hora de Início</label>
-              <input
-                id="horaInicio"
-                name="horaInicio"
-                type="time"
-                value={formData.horaInicio}
-                onChange={handleChange}
-                aria-invalid={!!erros.horaInicio}
-                aria-describedby={erros.horaInicio ? "horaInicio-error" : undefined}
-              />
-              {erros.horaInicio && (
-                <small id="horaInicio-error" className="erro" role="alert">
-                  {erros.horaInicio}
-                </small>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="horaSaida">Hora de Saída</label>
-              <input
-                id="horaSaida"
-                name="horaSaida"
-                type="time"
-                value={formData.horaSaida}
-                onChange={handleChange}
-                aria-invalid={!!erros.horaSaida}
-                aria-describedby={erros.horaSaida ? "horaSaida-error" : undefined}
-              />
-              {erros.horaSaida && (
-                <small id="horaSaida-error" className="erro" role="alert">
-                  {erros.horaSaida}
-                </small>
-              )}
-            </div>
+            {[{ id: "kmInicial", label: "Km Inicial" },
+            { id: "kmFinal", label: "Km Final" },
+            { id: "horaInicio", label: "Hora de Início", type: "time" },
+            { id: "horaSaida", label: "Hora de Saída", type: "time" }].map(
+              ({ id, label, type = "number" }) => (
+                <div key={id}>
+                  <label htmlFor={id}>{label}</label>
+                  <input
+                    id={id}
+                    name={id}
+                    type={type}
+                    min="0"
+                    value={formData[id]}
+                    onChange={handleChange}
+                    aria-invalid={!!erros[id]}
+                    aria-describedby={erros[id] ? `${id}-error` : undefined}
+                  />
+                  {erros[id] && (
+                    <small id={`${id}-error`} className="erro" role="alert">
+                      {erros[id]}
+                    </small>
+                  )}
+                </div>
+              )
+            )}
 
             <div className="full-width">
               <label htmlFor="data">Data</label>
@@ -271,3 +217,5 @@ const ModalRegistro = ({ registro, onClose, onSalvar }) => {
 };
 
 export default ModalRegistro;
+
+
