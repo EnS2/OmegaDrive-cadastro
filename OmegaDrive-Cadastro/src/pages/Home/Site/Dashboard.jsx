@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Car, Plus } from "lucide-react";
 import Calendar from "react-calendar";
@@ -11,7 +10,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import ModalRegistro from "@/components/ModalRegistro";
 
-const API_BASE = "/api/registrar";  // <-- usando proxy para API
+const API_BASE = "/api/registrar";
 
 const Dashboard = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -21,7 +20,6 @@ const Dashboard = () => {
   const [kmTotal, setKmTotal] = useState(0);
   const [registroEditando, setRegistroEditando] = useState(null);
 
-  // Ajusta background só uma vez
   useEffect(() => {
     document.body.style.backgroundColor = "#ffffff";
     return () => {
@@ -29,11 +27,11 @@ const Dashboard = () => {
     };
   }, []);
 
-  // Função para formatar data para yyyy-mm-dd
   const formatISODate = (data) =>
-    `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, "0")}-${String(data.getDate()).padStart(2, "0")}`;
+    `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, "0")}-${String(
+      data.getDate()
+    ).padStart(2, "0")}`;
 
-  // Função para formatar data para exibição tipo "quinta-feira, 9 de junho"
   const formatarData = (data) =>
     data.toLocaleDateString("pt-BR", {
       weekday: "long",
@@ -41,7 +39,6 @@ const Dashboard = () => {
       month: "long",
     });
 
-  // Carrega registros da API toda vez que selectedDate muda
   useEffect(() => {
     const carregarRegistros = async () => {
       try {
@@ -61,7 +58,6 @@ const Dashboard = () => {
           return;
         }
 
-        // Mapeia datas para objetos Date
         const registros = res.data.map((r) => ({
           ...r,
           data: new Date(r.dataMarcada || r.data),
@@ -69,7 +65,6 @@ const Dashboard = () => {
 
         const dataSelecionadaISO = formatISODate(selectedDate);
 
-        // Filtra registros para a data selecionada (comparação yyyy-mm-dd)
         const registrosFiltrados = registros.filter(
           (r) => formatISODate(new Date(r.data)) === dataSelecionadaISO
         );
@@ -85,13 +80,12 @@ const Dashboard = () => {
     carregarRegistros();
   }, [selectedDate]);
 
-  // Atualiza totais quando registros mudam
   useEffect(() => {
     setTotalViagens(todosRegistros.length);
 
     const totalKm = todosRegistros.reduce((soma, r) => {
-      const kmIda = parseFloat(r.kmIda || r.kmInicial);
-      const kmVolta = parseFloat(r.kmVolta || r.kmFinal);
+      const kmIda = parseFloat(r.kmIda ?? r.kmInicial ?? 0);
+      const kmVolta = parseFloat(r.kmVolta ?? r.kmFinal ?? 0);
       const km = kmVolta - kmIda;
       return soma + (isNaN(km) ? 0 : km);
     }, 0);
@@ -99,28 +93,31 @@ const Dashboard = () => {
     setKmTotal(totalKm);
   }, [todosRegistros]);
 
-  // Validação simples antes de salvar
   const validarRegistro = (registro) => {
     const { veiculo, rgCondutor, kmIda, kmVolta, horaSaida } = registro;
     if (!veiculo || !rgCondutor || !kmIda || !kmVolta || !horaSaida) {
-      toast.error("Preencha todos os campos obrigatórios: veículo, condutor, km, hora de saída.");
+      toast.error(
+        "Preencha todos os campos obrigatórios: veículo, condutor, km, hora de saída."
+      );
       return false;
     }
     return true;
   };
 
-  // Salva registro (POST ou PUT)
   const salvarRegistro = async (registro) => {
-    const dataMarcada = new Date(registro.data);
-    dataMarcada.setHours(0, 0, 0, 0);
+    // Corrigido: só gera Date válido e passa ISO se válido
+    let dataMarcadaObj = registro.data instanceof Date ? registro.data : new Date(registro.data);
+    if (isNaN(dataMarcadaObj.getTime())) dataMarcadaObj = new Date();
+    dataMarcadaObj.setHours(0, 0, 0, 0);
+    const dataMarcadaISO = dataMarcadaObj.toISOString();
 
     const registroFinal = {
-      dataMarcada: dataMarcada.toISOString(),
+      dataMarcada: dataMarcadaISO,
       horaInicio: registro.horaInicio || null,
       horaSaida: registro.horaSaida,
       destino: registro.destino || null,
-      kmIda: parseFloat(registro.kmIda || registro.kmInicial),
-      kmVolta: parseFloat(registro.kmVolta || registro.kmFinal),
+      kmIda: parseFloat(registro.kmIda ?? registro.kmInicial),
+      kmVolta: parseFloat(registro.kmVolta ?? registro.kmFinal),
       observacao: registro.observacao || registro.observacoes || null,
       veiculo: registro.veiculo,
       placa: registro.placa,
@@ -137,16 +134,20 @@ const Dashboard = () => {
     }
   };
 
-  // Handler ao salvar pelo modal
   const handleSalvarModal = async (registro) => {
     if (!validarRegistro(registro)) return;
 
     try {
       const res = await salvarRegistro(registro);
-      const atualizado = { ...res.data, data: new Date(res.data.dataMarcada) };
+      const atualizado = {
+        ...res.data,
+        data: new Date(res.data.dataMarcada || res.data.data),
+      };
 
       if (registroEditando) {
-        setTodosRegistros((prev) => prev.map((r) => (r.id === atualizado.id ? atualizado : r)));
+        setTodosRegistros((prev) =>
+          prev.map((r) => (r.id === atualizado.id ? atualizado : r))
+        );
         toast.success("Registro editado com sucesso.");
       } else {
         setTodosRegistros((prev) => [...prev, atualizado]);
@@ -161,7 +162,6 @@ const Dashboard = () => {
     }
   };
 
-  // Excluir registro
   const handleExcluir = async (id) => {
     if (!window.confirm("Tem certeza que deseja excluir este registro?")) return;
 
@@ -276,13 +276,22 @@ const RegistroCard = ({ registro, onEditar, onExcluir }) => (
       <div className="dados-condutor">
         <small>📝 {registro.rgCondutor || registro.condutor}</small>
         {registro.editadoPor && <small>✏️ {registro.editadoPor}</small>}
-        {registro.destino && <p><strong>Destino:</strong> {registro.destino}</p>}
-        {(registro.horaInicio || registro.horaSaida) && (
+        {registro.destino && (
           <p>
-            <strong>Horário:</strong> {registro.horaInicio || "--"} → {registro.horaSaida || "--"}
+            <strong>Destino:</strong> {registro.destino}
           </p>
         )}
-        {registro.observacao && <p><strong>Observações:</strong> {registro.observacao}</p>}
+        {(registro.horaInicio || registro.horaSaida) && (
+          <p>
+            <strong>Horário:</strong> {registro.horaInicio || "--"} →{" "}
+            {registro.horaSaida || "--"}
+          </p>
+        )}
+        {registro.observacao && (
+          <p>
+            <strong>Observações:</strong> {registro.observacao}
+          </p>
+        )}
       </div>
 
       <div className="dados-km">
@@ -298,12 +307,8 @@ const RegistroCard = ({ registro, onEditar, onExcluir }) => (
     </div>
 
     <div className="registro-actions">
-      <button className="editar-btn" onClick={onEditar}>
-        Editar
-      </button>
-      <button className="excluir-btn" onClick={onExcluir}>
-        Excluir
-      </button>
+      <button onClick={onEditar}>Editar</button>
+      <button onClick={onExcluir}>Excluir</button>
     </div>
   </div>
 );
