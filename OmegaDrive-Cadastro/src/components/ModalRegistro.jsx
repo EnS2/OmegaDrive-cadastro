@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
+const parseDate = (dateValue) => {
+  if (!dateValue) return "";
+  const d = new Date(dateValue);
+  return isNaN(d) ? "" : d.toISOString().split("T")[0];
+};
+
 const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
   const [formData, setFormData] = useState({
     condutor: "",
@@ -12,7 +18,7 @@ const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
     kmFinal: "",
     horaInicio: "",
     horaSaida: "",
-    data: new Date(dataSelecionada).toISOString().split("T")[0],
+    data: parseDate(dataSelecionada),
     editadoPor: "",
     observacoes: "",
   });
@@ -32,15 +38,15 @@ const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
         horaInicio: registro.horaInicio || "",
         horaSaida: registro.horaSaida || "",
         data: registro.dataMarcada
-          ? new Date(registro.dataMarcada).toISOString().split("T")[0]
-          : new Date(dataSelecionada).toISOString().split("T")[0],
+          ? parseDate(registro.dataMarcada)
+          : parseDate(dataSelecionada),
         editadoPor: registro.editadoPor || "",
         observacoes: registro.observacoes || "",
       });
     } else {
       setFormData((prev) => ({
         ...prev,
-        data: new Date(dataSelecionada).toISOString().split("T")[0],
+        data: parseDate(dataSelecionada),
       }));
     }
   }, [registro, dataSelecionada]);
