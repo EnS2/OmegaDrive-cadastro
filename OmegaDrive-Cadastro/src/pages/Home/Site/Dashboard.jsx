@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Car, Plus } from "lucide-react";
 import Calendar from "react-calendar";
@@ -10,8 +11,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import ModalRegistro from "@/components/ModalRegistro";
 
-const API_BASE = "/registrar";
-
+const API_BASE = "/api/registrar";  // <-- usando proxy para API
 
 const Dashboard = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -20,8 +20,8 @@ const Dashboard = () => {
   const [totalViagens, setTotalViagens] = useState(0);
   const [kmTotal, setKmTotal] = useState(0);
   const [registroEditando, setRegistroEditando] = useState(null);
-  const [nomeUsuario, setNomeUsuario] = useState("");
 
+  // Ajusta background só uma vez
   useEffect(() => {
     document.body.style.backgroundColor = "#ffffff";
     return () => {
@@ -29,9 +29,11 @@ const Dashboard = () => {
     };
   }, []);
 
+  // Função para formatar data para yyyy-mm-dd
   const formatISODate = (data) =>
     `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, "0")}-${String(data.getDate()).padStart(2, "0")}`;
 
+  // Função para formatar data para exibição tipo "quinta-feira, 9 de junho"
   const formatarData = (data) =>
     data.toLocaleDateString("pt-BR", {
       weekday: "long",
@@ -39,6 +41,7 @@ const Dashboard = () => {
       month: "long",
     });
 
+  // Carrega registros da API toda vez que selectedDate muda
   useEffect(() => {
     const carregarRegistros = async () => {
       try {
@@ -53,26 +56,25 @@ const Dashboard = () => {
         const res = await axios.get(`${API_BASE}`, config);
 
         if (!Array.isArray(res.data)) {
-          console.error("Resposta inválida da API:", res.data);
-          toast.error("Erro ao carregar registros: resposta inesperada.");
+          toast.error("Erro ao carregar registros: resposta inválida.");
           setTodosRegistros([]);
           return;
         }
 
-        const registros = res.data.map((r) => ({ ...r, data: new Date(r.data) }));
+        // Mapeia datas para objetos Date
+        const registros = res.data.map((r) => ({
+          ...r,
+          data: new Date(r.dataMarcada || r.data),
+        }));
+
         const dataSelecionadaISO = formatISODate(selectedDate);
 
+        // Filtra registros para a data selecionada (comparação yyyy-mm-dd)
         const registrosFiltrados = registros.filter(
           (r) => formatISODate(new Date(r.data)) === dataSelecionadaISO
         );
 
         setTodosRegistros(registrosFiltrados);
-
-        if (registrosFiltrados.length > 0 && registrosFiltrados[0].nome) {
-          setNomeUsuario(registrosFiltrados[0].nome);
-        } else {
-          setNomeUsuario("");
-        }
       } catch (e) {
         console.error(e);
         toast.error("Erro ao carregar registros do servidor");
@@ -83,26 +85,31 @@ const Dashboard = () => {
     carregarRegistros();
   }, [selectedDate]);
 
+  // Atualiza totais quando registros mudam
   useEffect(() => {
     setTotalViagens(todosRegistros.length);
 
     const totalKm = todosRegistros.reduce((soma, r) => {
-      const km = parseFloat(r.kmFinal) - parseFloat(r.kmInicial);
+      const kmIda = parseFloat(r.kmIda || r.kmInicial);
+      const kmVolta = parseFloat(r.kmVolta || r.kmFinal);
+      const km = kmVolta - kmIda;
       return soma + (isNaN(km) ? 0 : km);
     }, 0);
 
     setKmTotal(totalKm);
   }, [todosRegistros]);
 
+  // Validação simples antes de salvar
   const validarRegistro = (registro) => {
-    const { veiculo, condutor, kmInicial, kmFinal, horaSaida } = registro;
-    if (!veiculo || !condutor || !kmInicial || !kmFinal || !horaSaida) {
+    const { veiculo, rgCondutor, kmIda, kmVolta, horaSaida } = registro;
+    if (!veiculo || !rgCondutor || !kmIda || !kmVolta || !horaSaida) {
       toast.error("Preencha todos os campos obrigatórios: veículo, condutor, km, hora de saída.");
       return false;
     }
     return true;
   };
 
+  // Salva registro (POST ou PUT)
   const salvarRegistro = async (registro) => {
     const dataMarcada = new Date(registro.data);
     dataMarcada.setHours(0, 0, 0, 0);
@@ -112,12 +119,12 @@ const Dashboard = () => {
       horaInicio: registro.horaInicio || null,
       horaSaida: registro.horaSaida,
       destino: registro.destino || null,
-      kmIda: parseFloat(registro.kmInicial),
-      kmVolta: parseFloat(registro.kmFinal),
-      observacao: registro.observacoes || null,
+      kmIda: parseFloat(registro.kmIda || registro.kmInicial),
+      kmVolta: parseFloat(registro.kmVolta || registro.kmFinal),
+      observacao: registro.observacao || registro.observacoes || null,
       veiculo: registro.veiculo,
       placa: registro.placa,
-      rgCondutor: registro.rg || "",
+      rgCondutor: registro.rgCondutor || registro.rg || "",
     };
 
     const token = localStorage.getItem("token");
@@ -130,6 +137,7 @@ const Dashboard = () => {
     }
   };
 
+  // Handler ao salvar pelo modal
   const handleSalvarModal = async (registro) => {
     if (!validarRegistro(registro)) return;
 
@@ -153,6 +161,7 @@ const Dashboard = () => {
     }
   };
 
+  // Excluir registro
   const handleExcluir = async (id) => {
     if (!window.confirm("Tem certeza que deseja excluir este registro?")) return;
 
@@ -178,10 +187,6 @@ const Dashboard = () => {
             <h1 className="title">Grupo Ômega</h1>
             <p className="subtitle">Controle de Km</p>
           </div>
-        </div>
-
-        <div className="usuario-info">
-          <strong>{nomeUsuario || "Usuário"}</strong>
         </div>
       </div>
 
@@ -269,45 +274,38 @@ const RegistroCard = ({ registro, onEditar, onExcluir }) => (
 
     <div className="registro-body">
       <div className="dados-condutor">
-        <small>📝 {registro.condutor}</small>
+        <small>📝 {registro.rgCondutor || registro.condutor}</small>
         {registro.editadoPor && <small>✏️ {registro.editadoPor}</small>}
-        {registro.rg && <small>RG: {registro.rg}</small>}
         {registro.destino && <p><strong>Destino:</strong> {registro.destino}</p>}
         {(registro.horaInicio || registro.horaSaida) && (
           <p>
             <strong>Horário:</strong> {registro.horaInicio || "--"} → {registro.horaSaida || "--"}
           </p>
         )}
-        {registro.observacoes && (
-          <p><strong>Observações:</strong> {registro.observacoes}</p>
-        )}
+        {registro.observacao && <p><strong>Observações:</strong> {registro.observacao}</p>}
       </div>
 
       <div className="dados-km">
         <div>
           <strong>Inicial</strong>
-          <p>{registro.kmInicial} km</p>
+          <p>{registro.kmIda || registro.kmInicial} km</p>
         </div>
         <div>
           <strong>Final</strong>
-          <p>{registro.kmFinal} km</p>
-        </div>
-        <div>
-          <strong>Total</strong>
-          <p style={{ fontWeight: "bold", color: "#4a00e0" }}>
-            {parseFloat(registro.kmFinal) - parseFloat(registro.kmInicial)} km
-          </p>
+          <p>{registro.kmVolta || registro.kmFinal} km</p>
         </div>
       </div>
+    </div>
 
-      <div className="botoes">
-        <button className="editar" onClick={onEditar}>✏️ Editar</button>
-        <button className="excluir" onClick={onExcluir}>🗑️ Excluir</button>
-      </div>
+    <div className="registro-actions">
+      <button className="editar-btn" onClick={onEditar}>
+        Editar
+      </button>
+      <button className="excluir-btn" onClick={onExcluir}>
+        Excluir
+      </button>
     </div>
   </div>
 );
 
 export default Dashboard;
-
-
