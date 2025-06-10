@@ -26,6 +26,7 @@ const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
   const [erros, setErros] = useState({});
 
   useEffect(() => {
+    // Sempre que abrir o modal com um registro, preencher o formulário
     if (registro) {
       setFormData({
         condutor: registro.condutor || "",
@@ -37,13 +38,12 @@ const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
         kmFinal: registro.kmVolta !== undefined ? registro.kmVolta : "",
         horaInicio: registro.horaInicio || "",
         horaSaida: registro.horaSaida || "",
-        data: registro.dataMarcada
-          ? parseDate(registro.dataMarcada)
-          : parseDate(dataSelecionada),
+        data: parseDate(registro.dataMarcada), // Prioriza a data salva no registro
         editadoPor: registro.editadoPor || "",
         observacoes: registro.observacoes || "",
       });
     } else {
+      // Em caso de novo registro, usar a data selecionada no calendário
       setFormData((prev) => ({
         ...prev,
         data: parseDate(dataSelecionada),
@@ -86,7 +86,7 @@ const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
     return true;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validar()) return;
@@ -108,7 +108,7 @@ const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
     };
 
     try {
-      if (onSalvar) onSalvar(payload);
+      if (onSalvar) await onSalvar(payload);
       toast.success(registro ? "Registro atualizado com sucesso!" : "Registro salvo com sucesso!");
       onClose();
     } catch (error) {
@@ -223,5 +223,3 @@ const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
 };
 
 export default ModalRegistro;
-
-
