@@ -24,9 +24,8 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Adapta o payload do frontend para o backend
+// Adapta o payload do frontend para o formato aceito pelo backend
 const adaptarPayloadParaBackend = (payloadFrontend) => ({
-  condutor: payloadFrontend.condutor,
   rgCondutor: payloadFrontend.rgCondutor,
   dataMarcada: payloadFrontend.dataMarcada,
   horaInicio: payloadFrontend.horaInicio || null,
@@ -38,8 +37,7 @@ const adaptarPayloadParaBackend = (payloadFrontend) => ({
   kmVolta: isNaN(Number(payloadFrontend.kmVolta))
     ? 0
     : Number(payloadFrontend.kmVolta),
-  observacoes: payloadFrontend.observacoes || null,
-  editadoPor: payloadFrontend.editadoPor || null,
+  observacao: payloadFrontend.observacoes || null,
   veiculo: payloadFrontend.veiculo,
   placa: payloadFrontend.placa,
 });
@@ -67,10 +65,11 @@ export const salvarRegistro = async (registro, payloadFrontend) => {
 
 /**
  * Busca todos os registros do dia
+ * @param {string} data - formato "YYYY-MM-DD"
  */
-export const buscarRegistrosDoDia = async () => {
+export const buscarRegistrosDoDia = async (data) => {
   try {
-    const response = await api.get("/registrar");
+    const response = await api.get(`/registrar?data=${data}`);
     return response.data;
   } catch (error) {
     const msg = error.response?.data?.message || error.message;

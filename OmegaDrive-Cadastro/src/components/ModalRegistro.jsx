@@ -26,7 +26,6 @@ const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
   const [erros, setErros] = useState({});
 
   useEffect(() => {
-    // Sempre que abrir o modal com um registro, preencher o formulário
     if (registro) {
       setFormData({
         condutor: registro.condutor || "",
@@ -38,12 +37,11 @@ const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
         kmFinal: registro.kmVolta !== undefined ? registro.kmVolta : "",
         horaInicio: registro.horaInicio || "",
         horaSaida: registro.horaSaida || "",
-        data: parseDate(registro.dataMarcada), // Prioriza a data salva no registro
+        data: parseDate(registro.dataMarcada || dataSelecionada),
         editadoPor: registro.editadoPor || "",
         observacoes: registro.observacoes || "",
       });
     } else {
-      // Em caso de novo registro, usar a data selecionada no calendário
       setFormData((prev) => ({
         ...prev,
         data: parseDate(dataSelecionada),
@@ -88,7 +86,6 @@ const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!validar()) return;
 
     const payload = {
@@ -180,7 +177,7 @@ const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
                 id="data"
                 name="data"
                 type="date"
-                value={formData.data}
+                value={formData.data || ""}
                 onChange={handleChange}
               />
             </div>
