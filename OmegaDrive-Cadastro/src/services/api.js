@@ -1,6 +1,6 @@
 import axios from "axios";
 
-// Base da API - via proxy do Vite para backend (ex: http://localhost:4000)
+// Base da API - usa proxy do Vite (ex: http://localhost:4000)
 const BASE_URL = "/api";
 
 const api = axios.create({
@@ -9,7 +9,7 @@ const api = axios.create({
     "Content-Type": "application/json",
     Accept: "application/json",
   },
-  timeout: 5000,
+  timeout: 10000, // Aumentado de 5000ms para 10000ms
 });
 
 // Interceptador para incluir token JWT no cabeçalho
@@ -24,10 +24,19 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Adapta o payload do frontend para o formato aceito pelo backend
+// Função que formata data para 'YYYY-MM-DD'
+const formatarDataParaBackend = (dateValue) => {
+  const date = new Date(dateValue);
+  const ano = date.getFullYear();
+  const mes = String(date.getMonth() + 1).padStart(2, "0");
+  const dia = String(date.getDate()).padStart(2, "0");
+  return `${ano}-${mes}-${dia}`;
+};
+
+// Converte os dados do frontend para o formato aceito pelo backend
 const adaptarPayloadParaBackend = (payloadFrontend) => ({
   rgCondutor: payloadFrontend.rgCondutor,
-  dataMarcada: payloadFrontend.dataMarcada,
+  dataMarcada: formatarDataParaBackend(payloadFrontend.dataMarcada),
   horaInicio: payloadFrontend.horaInicio || null,
   horaSaida: payloadFrontend.horaSaida || null,
   destino: payloadFrontend.destino || null,
@@ -44,8 +53,9 @@ const adaptarPayloadParaBackend = (payloadFrontend) => ({
 
 /**
  * Salva ou atualiza um registro
- * @param {Object} registro - Se tiver `id`, será update
+ * @param {Object|null} registro - Objeto com `id` se for edição
  * @param {Object} payloadFrontend - Dados do formulário
+ * @returns {Promise<Object>} Registro salvo ou atualizado
  */
 export const salvarRegistro = async (registro, payloadFrontend) => {
   try {
@@ -57,36 +67,38 @@ export const salvarRegistro = async (registro, payloadFrontend) => {
 
     return response.data;
   } catch (error) {
-    const msg = error.response?.data?.message || error.message;
+    const msg = error.response?.data?.error || error.message;
     console.error("Erro ao salvar registro:", msg);
     throw new Error(msg);
   }
 };
 
 /**
- * Busca todos os registros do dia
- * @param {string} data - formato "YYYY-MM-DD"
+ * Busca os registros do dia selecionado
+ * @param {string|Date} data - Data no formato Date ou string
+ * @returns {Promise<Array>} Lista de registros
  */
 export const buscarRegistrosDoDia = async (data) => {
   try {
-    const response = await api.get(`/registrar?data=${data}`);
+    const dataFormatada = formatarDataParaBackend(data);
+    const response = await api.get(`/registrar?data=${dataFormatada}`);
     return response.data;
   } catch (error) {
-    const msg = error.response?.data?.message || error.message;
+    const msg = error.response?.data?.error || error.message;
     console.error("Erro ao buscar registros:", msg);
     throw new Error(msg);
   }
 };
 
 /**
- * Deleta um registro por ID
+ * Exclui um registro por ID
  * @param {string} id - ID do registro
  */
 export const deletarRegistro = async (id) => {
   try {
     await api.delete(`/registrar/${id}`);
   } catch (error) {
-    const msg = error.response?.data?.message || error.message;
+    const msg = error.response?.data?.error || error.message;
     console.error("Erro ao deletar registro:", msg);
     throw new Error(msg);
   }
@@ -95,28 +107,30 @@ export const deletarRegistro = async (id) => {
 /**
  * Realiza login do usuário
  * @param {{ email: string, password: string }} credentials
+ * @returns {Promise<Object>} Dados do usuário e token
  */
 export const login = async ({ email, password }) => {
   try {
     const response = await api.post("/login", { email, password });
     return response.data;
   } catch (error) {
-    const msg = error.response?.data?.message || error.message;
+    const msg = error.response?.data?.error || error.message;
     console.error("Erro no login:", msg);
     throw new Error(msg);
   }
 };
 
 /**
- * Realiza cadastro de usuário
+ * Cadastra novo usuário
  * @param {{ name: string, email: string, password: string }} userInfo
+ * @returns {Promise<Object>} Dados do usuário criado
  */
 export const cadastrar = async ({ name, email, password }) => {
   try {
     const response = await api.post("/cadastro", { name, email, password });
     return response.data;
   } catch (error) {
-    const msg = error.response?.data?.message || error.message;
+    const msg = error.response?.data?.error || error.message;
     console.error("Erro no cadastro:", msg);
     throw new Error(msg);
   }

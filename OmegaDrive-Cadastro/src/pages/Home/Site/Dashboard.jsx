@@ -23,10 +23,10 @@ const Dashboard = () => {
   });
 
   const [mostrarModal, setMostrarModal] = useState(false);
-  const [todosRegistros, setTodosRegistros] = useState([]);
+  const [registroEditando, setRegistroEditando] = useState(null);
+  const [registros, setRegistros] = useState([]);
   const [totalViagens, setTotalViagens] = useState(0);
   const [kmTotal, setKmTotal] = useState(0);
-  const [registroEditando, setRegistroEditando] = useState(null);
 
   useEffect(() => {
     document.body.style.backgroundColor = "#ffffff";
@@ -35,7 +35,52 @@ const Dashboard = () => {
     };
   }, []);
 
-  const formatarData = (data) =>
+  useEffect(() => {
+    localStorage.setItem("selectedDate", selectedDate.toISOString());
+  }, [selectedDate]);
+
+  useEffect(() => {
+    const carregarRegistros = async () => {
+      try {
+        if (!selectedDate || isNaN(selectedDate.getTime())) {
+          console.error("Data inválida:", selectedDate);
+          toast.error("Data inválida selecionada.");
+          return;
+        }
+
+        const dataFormatada = selectedDate.toISOString().split("T")[0];
+        const resposta = await buscarRegistrosDoDia(dataFormatada);
+
+        const registrosConvertidos = resposta.map((r) => ({
+          ...r,
+          data: new Date(r.dataMarcada || r.data),
+        }));
+
+        setRegistros(registrosConvertidos);
+      } catch (error) {
+        console.error(error);
+        toast.error("Erro ao carregar registros do servidor");
+        setRegistros([]);
+      }
+    };
+
+    carregarRegistros();
+  }, [selectedDate]);
+
+  useEffect(() => {
+    setTotalViagens(registros.length);
+
+    const somaKm = registros.reduce((total, r) => {
+      const inicio = parseFloat(r.kmIda ?? r.kmInicial ?? 0);
+      const fim = parseFloat(r.kmVolta ?? r.kmFinal ?? 0);
+      const diferenca = fim - inicio;
+      return total + (isNaN(diferenca) ? 0 : diferenca);
+    }, 0);
+
+    setKmTotal(somaKm);
+  }, [registros]);
+
+  const formatarDataExtensa = (data) =>
     data.toLocaleDateString("pt-BR", {
       weekday: "long",
       day: "numeric",
@@ -48,119 +93,79 @@ const Dashboard = () => {
     setSelectedDate(d);
   };
 
-  useEffect(() => {
-    localStorage.setItem("selectedDate", selectedDate.toISOString());
-  }, [selectedDate]);
-
-  useEffect(() => {
-    const carregarRegistros = async () => {
-      try {
-        const dataISO = selectedDate.toISOString().split("T")[0];
-        const res = await buscarRegistrosDoDia(dataISO);
-
-        const registros = res.map((r) => ({
-          ...r,
-          data: new Date(r.dataMarcada || r.data),
-        }));
-
-        setTodosRegistros(registros);
-      } catch (e) {
-        console.error(e);
-        toast.error("Erro ao carregar registros do servidor");
-        setTodosRegistros([]);
-      }
-    };
-
-    carregarRegistros();
-  }, [selectedDate]);
-
-  useEffect(() => {
-    setTotalViagens(todosRegistros.length);
-
-    const totalKm = todosRegistros.reduce((soma, r) => {
-      const kmIda = parseFloat(r.kmIda ?? r.kmInicial ?? 0);
-      const kmVolta = parseFloat(r.kmVolta ?? r.kmFinal ?? 0);
-      const km = kmVolta - kmIda;
-      return soma + (isNaN(km) ? 0 : km);
-    }, 0);
-
-    setKmTotal(totalKm);
-  }, [todosRegistros]);
-
   const validarRegistro = (registro) => {
     const { veiculo, rgCondutor, kmIda, kmVolta, horaSaida } = registro;
     if (!veiculo || !rgCondutor || !kmIda || !kmVolta || !horaSaida) {
-      toast.error(
-        "Preencha todos os campos obrigatórios: veículo, condutor, km, hora de saída."
-      );
+      toast.error("Preencha todos os campos obrigatórios.");
       return false;
     }
     return true;
   };
 
-  const handleSalvarModal = async (registro) => {
+  const handleSalvarRegistro = async (registro) => {
     if (!validarRegistro(registro)) return;
 
     try {
-      const registroSalvo = await salvarRegistro(registroEditando, {
+      const salvo = await salvarRegistro(registroEditando, {
         ...registro,
-        dataMarcada: selectedDate.toISOString(),
+        dataMarcada: selectedDate.toISOString().split("T")[0],
       });
 
-      const atualizado = {
-        ...registroSalvo,
-        data: new Date(registroSalvo.dataMarcada || registroSalvo.data),
+      const novoRegistro = {
+        ...salvo,
+        data: new Date(salvo.dataMarcada || salvo.data),
       };
 
       if (registroEditando) {
-        setTodosRegistros((prev) =>
-          prev.map((r) => (r.id === atualizado.id ? atualizado : r))
+        setRegistros((prev) =>
+          prev.map((r) => (r.id === novoRegistro.id ? novoRegistro : r))
         );
-        toast.success("Registro editado com sucesso.");
+        toast.success("Registro atualizado.");
       } else {
-        setTodosRegistros((prev) => [...prev, atualizado]);
-        toast.success("Registro adicionado com sucesso.");
+        setRegistros((prev) => [...prev, novoRegistro]);
+        toast.success("Registro adicionado.");
       }
 
       setMostrarModal(false);
       setRegistroEditando(null);
-    } catch (e) {
-      console.error(e);
-      toast.error("Erro ao salvar registro.");
+    } catch (error) {
+      console.error(error);
+      toast.error("Erro ao salvar o registro.");
     }
   };
 
-  const handleExcluir = async (id) => {
-    if (!window.confirm("Tem certeza que deseja excluir este registro?")) return;
+  const handleExcluirRegistro = async (id) => {
+    const confirmar = window.confirm("Deseja excluir este registro?");
+    if (!confirmar) return;
 
     try {
       await deletarRegistro(id);
-      setTodosRegistros((prev) => prev.filter((r) => r.id !== id));
-      toast.success("Registro excluído com sucesso.");
-    } catch (e) {
-      console.error(e);
-      toast.error("Erro ao excluir registro.");
+      setRegistros((prev) => prev.filter((r) => r.id !== id));
+      toast.success("Registro excluído.");
+    } catch (error) {
+      console.error(error);
+      toast.error("Erro ao excluir o registro.");
     }
   };
 
   return (
     <div className="dashboard-container">
-      <div className="top-bar">
+      <header className="top-bar">
         <div className="branding-left">
           <Car className="car-icon" />
           <div className="branding-texts">
             <h1 className="title">Grupo Ômega</h1>
-            <p className="subtitle">Controle de Km</p>
+            <p className="subtitle">Controle de KM</p>
           </div>
         </div>
-      </div>
+      </header>
 
-      <div className="main-content">
+      <main className="main-content">
         <aside className="sidebar">
           <div className="calendar-summary-card">
             <div className="calendar-wrapper">
               <h3>Calendário</h3>
-              <span>{formatarData(selectedDate)}</span>
+              <span>{formatarDataExtensa(selectedDate)}</span>
               <Calendar
                 onChange={onDateChange}
                 value={selectedDate}
@@ -193,10 +198,10 @@ const Dashboard = () => {
           <div className="registros-do-dia">
             <h3>Registros do Dia</h3>
 
-            {todosRegistros.length === 0 ? (
-              <p>Nenhum registro para esta data.</p>
+            {registros.length === 0 ? (
+              <p>Nenhum registro encontrado.</p>
             ) : (
-              todosRegistros.map((r) => (
+              registros.map((r) => (
                 <RegistroCard
                   key={r.id}
                   registro={r}
@@ -204,13 +209,13 @@ const Dashboard = () => {
                     setRegistroEditando(r);
                     setMostrarModal(true);
                   }}
-                  onExcluir={() => handleExcluir(r.id)}
+                  onExcluir={() => handleExcluirRegistro(r.id)}
                 />
               ))
             )}
           </div>
         </section>
-      </div>
+      </main>
 
       {mostrarModal && (
         <ModalRegistro
@@ -219,7 +224,7 @@ const Dashboard = () => {
             setMostrarModal(false);
             setRegistroEditando(null);
           }}
-          onSalvar={handleSalvarModal}
+          onSalvar={handleSalvarRegistro}
           registroInicial={registroEditando}
         />
       )}
@@ -240,7 +245,7 @@ const RegistroCard = ({ registro, onEditar, onExcluir }) => (
       <span>🚗 {registro.veiculo}</span>
       <span>
         📅{" "}
-        {registro.data && !isNaN(new Date(registro.data))
+        {registro.data
           ? new Date(registro.data).toLocaleDateString("pt-BR")
           : "Data inválida"}
       </span>

@@ -92,7 +92,7 @@ const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
       id: registro?.id || null,
       condutor: formData.condutor,
       rgCondutor: formData.rg,
-      dataMarcada: formData.data,
+      dataMarcada: new Date(formData.data), // ✅ Corrigido aqui
       horaInicio: formData.horaInicio,
       horaSaida: formData.horaSaida,
       destino: formData.destino,
