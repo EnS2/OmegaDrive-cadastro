@@ -43,7 +43,6 @@ const Dashboard = () => {
     const carregarRegistros = async () => {
       try {
         if (!selectedDate || isNaN(selectedDate.getTime())) {
-          console.error("Data inválida:", selectedDate);
           toast.error("Data inválida selecionada.");
           return;
         }
@@ -53,7 +52,7 @@ const Dashboard = () => {
 
         const registrosConvertidos = resposta.map((r) => ({
           ...r,
-          data: new Date(r.dataMarcada || r.data),
+          data: new Date(r.dataMarcada || r.data || selectedDate),
         }));
 
         setRegistros(registrosConvertidos);
@@ -106,7 +105,7 @@ const Dashboard = () => {
     if (!validarRegistro(registro)) return;
 
     try {
-      const salvo = await salvarRegistro(registroEditando, {
+      const salvo = await salvarRegistro(registro.id, {
         ...registro,
         dataMarcada: selectedDate.toISOString().split("T")[0],
       });
@@ -225,7 +224,7 @@ const Dashboard = () => {
             setRegistroEditando(null);
           }}
           onSalvar={handleSalvarRegistro}
-          registroInicial={registroEditando}
+          registro={registroEditando}
         />
       )}
     </div>
@@ -242,33 +241,34 @@ const ResumoItem = ({ label, valor }) => (
 const RegistroCard = ({ registro, onEditar, onExcluir }) => (
   <div className="registro-card">
     <div className="registro-header">
-      <span>🚗 {registro.veiculo}</span>
+      <span>🚗 {registro.veiculo || "Veículo não informado"}</span>
       <span>
-        📅{" "}
-        {registro.data
-          ? new Date(registro.data).toLocaleDateString("pt-BR")
-          : "Data inválida"}
+        📅 {registro.data ? new Date(registro.data).toLocaleDateString("pt-BR") : "Data inválida"}
       </span>
     </div>
 
     <div className="registro-body">
       <div className="dados-condutor">
-        <small>📝 {registro.rgCondutor || registro.condutor}</small>
+        <small>🧑 {registro.condutor || "Condutor não informado"}</small>
+        <small>🆔 RG: {registro.rgCondutor || "Não informado"}</small>
+
         {registro.editadoPor && <small>✏️ {registro.editadoPor}</small>}
+
         {registro.destino && (
           <p>
             <strong>Destino:</strong> {registro.destino}
           </p>
         )}
+
         {(registro.horaInicio || registro.horaSaida) && (
           <p>
-            <strong>Horário:</strong> {registro.horaInicio || "--"} →{" "}
-            {registro.horaSaida || "--"}
+            <strong>Horário:</strong> {registro.horaInicio || "--"} → {registro.horaSaida || "--"}
           </p>
         )}
-        {registro.observacao && (
+
+        {registro.observacoes && (
           <p>
-            <strong>Observações:</strong> {registro.observacao}
+            <strong>Observações:</strong> {registro.observacoes}
           </p>
         )}
       </div>
@@ -276,11 +276,11 @@ const RegistroCard = ({ registro, onEditar, onExcluir }) => (
       <div className="dados-km">
         <div>
           <strong>Inicial</strong>
-          <p>{registro.kmIda || registro.kmInicial} km</p>
+          <p>{registro.kmIda || registro.kmInicial || 0} km</p>
         </div>
         <div>
           <strong>Final</strong>
-          <p>{registro.kmVolta || registro.kmFinal} km</p>
+          <p>{registro.kmVolta || registro.kmFinal || 0} km</p>
         </div>
       </div>
     </div>
@@ -293,3 +293,4 @@ const RegistroCard = ({ registro, onEditar, onExcluir }) => (
 );
 
 export default Dashboard;
+
