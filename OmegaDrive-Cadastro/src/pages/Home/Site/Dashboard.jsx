@@ -250,7 +250,8 @@ const RegistroCard = ({ registro, onEditar, onExcluir }) => (
     <div className="registro-body">
       <div className="dados-condutor">
         <small>🧑 {registro.condutor || "Condutor não informado"}</small>
-        <small>🆔 RG: {registro.rgCondutor || "Não informado"}</small>
+        <small>🆔 RG: {registro.rg || "Não informado"}</small>
+
 
         {registro.editadoPor && <small>✏️ {registro.editadoPor}</small>}
 

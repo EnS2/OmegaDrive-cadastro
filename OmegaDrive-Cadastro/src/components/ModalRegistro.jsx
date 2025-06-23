@@ -29,7 +29,7 @@ const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
     if (registro) {
       setFormData({
         condutor: registro.condutor || "",
-        rg: registro.rgCondutor || "",
+        rg: registro.rg || "", // ✅ CORRIGIDO AQUI
         veiculo: registro.veiculo || "",
         placa: registro.placa || "",
         destino: registro.destino || "",
@@ -92,7 +92,7 @@ const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
       id: registro?.id || null,
       condutor: formData.condutor,
       rgCondutor: formData.rg,
-      dataMarcada: formData.data, // ✅ Correção aplicada aqui
+      dataMarcada: formData.data,
       horaInicio: formData.horaInicio,
       horaSaida: formData.horaSaida,
       destino: formData.destino,
