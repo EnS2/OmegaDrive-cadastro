@@ -29,7 +29,7 @@ const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
     if (registro) {
       setFormData({
         condutor: registro.condutor || "",
-        rg: registro.rg || "", // ✅ CORRIGIDO AQUI
+        rg: registro.rg || "",
         veiculo: registro.veiculo || "",
         placa: registro.placa || "",
         destino: registro.destino || "",
@@ -42,10 +42,7 @@ const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
         observacoes: registro.observacoes || "",
       });
     } else {
-      setFormData((prev) => ({
-        ...prev,
-        data: parseDate(dataSelecionada),
-      }));
+      setFormData((prev) => ({ ...prev, data: parseDate(dataSelecionada) }));
     }
   }, [registro, dataSelecionada]);
 
@@ -106,7 +103,9 @@ const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
 
     try {
       if (onSalvar) await onSalvar(payload);
-      toast.success(registro ? "Registro atualizado com sucesso!" : "Registro salvo com sucesso!");
+      toast.success(
+        registro ? "Registro atualizado com sucesso!" : "Registro salvo com sucesso!"
+      );
       onClose();
     } catch (error) {
       const mensagemErro = error.response?.data?.error || "Erro ao salvar registro.";
@@ -145,31 +144,31 @@ const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
               </div>
             ))}
 
-            {[{ id: "kmInicial", label: "Km Inicial" },
-            { id: "kmFinal", label: "Km Final" },
-            { id: "horaInicio", label: "Hora de Início", type: "time" },
-            { id: "horaSaida", label: "Hora de Saída", type: "time" }].map(
-              ({ id, label, type = "number" }) => (
-                <div key={id}>
-                  <label htmlFor={id}>{label}</label>
-                  <input
-                    id={id}
-                    name={id}
-                    type={type}
-                    min="0"
-                    value={formData[id]}
-                    onChange={handleChange}
-                    aria-invalid={!!erros[id]}
-                    aria-describedby={erros[id] ? `${id}-error` : undefined}
-                  />
-                  {erros[id] && (
-                    <small id={`${id}-error`} className="erro" role="alert">
-                      {erros[id]}
-                    </small>
-                  )}
-                </div>
-              )
-            )}
+            {[
+              { id: "kmInicial", label: "Km Inicial" },
+              { id: "kmFinal", label: "Km Final" },
+              { id: "horaInicio", label: "Hora de Início", type: "time" },
+              { id: "horaSaida", label: "Hora de Saída", type: "time" },
+            ].map(({ id, label, type = "number" }) => (
+              <div key={id}>
+                <label htmlFor={id}>{label}</label>
+                <input
+                  id={id}
+                  name={id}
+                  type={type}
+                  min="0"
+                  value={formData[id]}
+                  onChange={handleChange}
+                  aria-invalid={!!erros[id]}
+                  aria-describedby={erros[id] ? `${id}-error` : undefined}
+                />
+                {erros[id] && (
+                  <small id={`${id}-error`} className="erro" role="alert">
+                    {erros[id]}
+                  </small>
+                )}
+              </div>
+            ))}
 
             <div className="full-width">
               <label htmlFor="data">Data</label>
@@ -206,12 +205,8 @@ const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
           </div>
 
           <div className="form-actions">
-            <button type="button" className="btn-cinza" onClick={onClose}>
-              Cancelar
-            </button>
-            <button type="submit" className="btn-roxo">
-              Salvar
-            </button>
+            <button type="button" className="btn-cinza" onClick={onClose}>Cancelar</button>
+            <button type="submit" className="btn-roxo">Salvar</button>
           </div>
         </form>
       </div>
@@ -220,4 +215,3 @@ const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
 };
 
 export default ModalRegistro;
-

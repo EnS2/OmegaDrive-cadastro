@@ -75,7 +75,7 @@ html, body {
 /* ========================== */
 .content-scroll-area {
   flex: 1;
-  overflow-y: visible; /* Scroll natural da página */
+  overflow-y: visible;
 }
 
 /* ========================== */
@@ -103,7 +103,7 @@ html, body {
 /* CALENDÁRIO + RESUMO */
 /* ========================== */
 .calendar-summary-card {
-  margin-top: 8rem; /* aumentei para mais espaço */
+  margin-top: 8rem;
   background-color: #f9f9ff;
   border: 1px solid #e5e7eb;
   border-radius: 16px;
@@ -147,6 +147,13 @@ html, body {
   padding: 1rem;
   text-align: center;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: default;
+}
+
+.resumo-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.12);
 }
 
 .resumo-label {
@@ -165,16 +172,15 @@ html, body {
 /* REGISTROS DO DIA */
 /* ========================== */
 .records-section {
-  margin-top: 4rem; /* mais espaço */
+  margin-top: 4rem;
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 1rem;
   align-items: flex-end;
   width: 100%;
-
-  max-height: calc(100vh - 150px); /* mais espaço para rolar internamente */
-  overflow-y: auto; /* Scroll só nessa área */
+  max-height: calc(100vh - 150px);
+  overflow-y: auto;
   padding-right: 0.5rem;
 }
 
@@ -197,7 +203,7 @@ html, body {
   gap: 0.4rem;
   font-weight: 500;
   font-size: 0.95rem;
-  transition: background 0.2s ease;
+  transition: background 0.3s ease;
 }
 
 .new-record-button:hover {
@@ -253,6 +259,7 @@ html, body {
   gap: 0.3rem;
   min-width: 220px;
   font-size: 0.95rem;
+  color: #374151;
 }
 
 .dados-km {
@@ -281,48 +288,56 @@ html, body {
 
 .observacoes {
   color: #374151;
+  margin-top: 0.5rem;
 }
 
 /* ========================== */
 /* BOTÕES DE AÇÃO */
 /* ========================== */
-.botoes {
+.registro-actions {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  justify-content: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid #f3f4f6;
+  background-color: #f9fafb;
+  border-radius: 0 0 12px 12px;
 }
 
-.editar,
-.excluir {
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: 500;
+.botao-acao {
+  padding: 0.5rem 1.2rem;
+  font-size: 0.9rem;
   border: none;
+  border-radius: 0.6rem;
+  font-weight: 600;
   cursor: pointer;
-  min-width: 70px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
   display: flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.4rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
-.editar {
-  background-color: #eff6ff;
-  color: #1d4ed8;
+.botao-acao:hover {
+  transform: scale(1.03);
 }
 
-.editar:hover {
-  background-color: #dbeafe;
+.botao-acao.editar {
+  background-color: #3b82f6;
+  color: white;
 }
 
-.excluir {
-  background-color: #fef2f2;
-  color: #b91c1c;
+.botao-acao.editar:hover {
+  background-color: #2563eb;
 }
 
-.excluir:hover {
-  background-color: #fee2e2;
+.botao-acao.excluir {
+  background-color: #ef4444;
+  color: white;
+}
+
+.botao-acao.excluir:hover {
+  background-color: #dc2626;
 }
 
 /* ========================== */
@@ -340,8 +355,8 @@ html, body {
 
   .records-section {
     margin-top: 2rem;
-    max-height: none; /* remove limite no mobile */
-    overflow-y: visible; /* scroll da página no mobile */
+    max-height: none;
+    overflow-y: visible;
   }
 
   .registro-body {
@@ -349,9 +364,8 @@ html, body {
     align-items: flex-start;
   }
 
-  .botoes {
-    flex-direction: row;
-    justify-content: flex-start;
-    gap: 1rem;
+  .registro-actions {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
