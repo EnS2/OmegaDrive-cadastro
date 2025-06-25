@@ -32,7 +32,8 @@ const RegistroCard = ({ registro, onEditar, onExcluir }) => {
 
                     {(registro.horaSaida || registro.horaRetorno) && (
                         <p>
-                            <strong>Horário:</strong> {registro.horaSaida || "--"} → {registro.horaRetorno || "--"}
+                            <strong>Horário:</strong>{" "}
+                            {registro.horaSaida || "--"} → {registro.horaRetorno || "--"}
                         </p>
                     )}
 
@@ -58,11 +59,11 @@ const RegistroCard = ({ registro, onEditar, onExcluir }) => {
                     </div>
                 </div>
 
-                <div className="registro-actions">
-                    <button className="botao-acao editar" onClick={() => onEditar(registro)}>
+                <div className="botoes">
+                    <button className="editar" onClick={() => onEditar(registro)}>
                         Editar
                     </button>
-                    <button className="botao-acao excluir" onClick={() => onExcluir(registro.id)}>
+                    <button className="excluir" onClick={() => onExcluir(registro.id)}>
                         Excluir
                     </button>
                 </div>

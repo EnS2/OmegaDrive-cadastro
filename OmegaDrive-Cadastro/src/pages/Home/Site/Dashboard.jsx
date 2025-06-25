@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Car, Plus } from "lucide-react";
+import { Car, Plus, Pencil, Trash2 } from "lucide-react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import "./Dashboard.css";
@@ -27,6 +27,19 @@ const formatarDataExtensa = (data) =>
     .toLowerCase();
 
 const getKm = (a, b) => (a != null ? a : b != null ? b : 0);
+
+const ordenarHorarios = (h1, h2) => {
+  if (!h1 && !h2) return "-- → --";
+  if (!h1) return `-- → ${h2}`;
+  if (!h2) return `${h1} → --`;
+
+  const [h1h, h1m] = h1.split(":").map(Number);
+  const [h2h, h2m] = h2.split(":").map(Number);
+  const t1 = h1h * 60 + h1m;
+  const t2 = h2h * 60 + h2m;
+
+  return t1 <= t2 ? `${h1} → ${h2}` : `${h2} → ${h1}`;
+};
 
 const Dashboard = () => {
   const [selectedDate, setSelectedDate] = useState(() => {
@@ -60,6 +73,7 @@ const Dashboard = () => {
           toast.error("Data inválida selecionada.");
           return;
         }
+
         const dataFormatada = selectedDate.toISOString().split("T")[0];
         const resposta = await buscarRegistrosDoDia(dataFormatada);
 
@@ -95,7 +109,8 @@ const Dashboard = () => {
   };
 
   const validarRegistro = (registro) => {
-    const { veiculo, condutor, rgCondutor, kmIda, kmVolta, horaSaida } = registro;
+    const { veiculo, condutor, rgCondutor, kmIda, kmVolta, horaSaida } =
+      registro;
     if (!veiculo || !condutor || !rgCondutor || !kmIda || !kmVolta || !horaSaida) {
       toast.error("Preencha todos os campos obrigatórios.");
       return false;
@@ -126,7 +141,9 @@ const Dashboard = () => {
       };
 
       if (registroEditando) {
-        setRegistros((prev) => prev.map((r) => (r.id === novoRegistro.id ? novoRegistro : r)));
+        setRegistros((prev) =>
+          prev.map((r) => (r.id === novoRegistro.id ? novoRegistro : r))
+        );
         toast.success("Registro atualizado.");
       } else {
         setRegistros((prev) => [...prev, novoRegistro]);
@@ -158,7 +175,7 @@ const Dashboard = () => {
   return (
     <div className="dashboard-container">
       <header className="top-bar">
-        <div className="branding-left flex items-center gap-2">
+        <div className="branding-left">
           <Car className="car-icon" />
           <div className="branding-texts">
             <h1 className="title">Grupo Ômega</h1>
@@ -173,7 +190,11 @@ const Dashboard = () => {
             <div className="calendar-wrapper">
               <h3>Calendário</h3>
               <span>{formatarDataExtensa(selectedDate)}</span>
-              <Calendar onChange={onDateChange} value={selectedDate} locale="pt-BR" />
+              <Calendar
+                onChange={onDateChange}
+                value={selectedDate}
+                locale="pt-BR"
+              />
             </div>
 
             <div className="resumo-container">
@@ -189,7 +210,7 @@ const Dashboard = () => {
 
         <section className="records-section">
           <button
-            className="new-record-button flex items-center gap-1"
+            className="new-record-button"
             onClick={() => {
               setRegistroEditando(null);
               setMostrarModal(true);
@@ -235,44 +256,44 @@ const Dashboard = () => {
 };
 
 const ResumoItem = ({ label, valor }) => (
-  <div className="resumo-card text-center bg-white p-2 rounded-md shadow-sm">
-    <div className="resumo-label font-medium text-gray-600">{label}</div>
-    <div className="resumo-valor font-bold text-lg text-gray-800">{valor}</div>
+  <div className="resumo-card">
+    <div className="resumo-label">{label}</div>
+    <div className="resumo-valor">{valor}</div>
   </div>
 );
 
 const RegistroCard = ({ registro, onEditar, onExcluir }) => (
-  <div className="registro-card border p-4 rounded-lg shadow-sm bg-white space-y-2">
-    <div className="registro-header flex justify-between items-center">
+  <div className="registro-card">
+    <div className="registro-header">
       <span>🚗 {registro.veiculo || "Veículo não informado"}</span>
       <span>📅 {formatarDataBR(registro.data)}</span>
     </div>
 
-    <div className="registro-body space-y-1 text-sm text-gray-700">
-      <div className="dados-condutor flex flex-col gap-1">
+    <div className="registro-body">
+      <div className="dados-condutor">
         <small>🧑 {registro.condutor || "Condutor não informado"}</small>
-        <small>🆔 RG: {registro.rgCondutor || registro.rg || "Não informado"}</small>
-        {registro.editadoPor && (
-          <small className="text-xs text-blue-500">✏️ {registro.editadoPor}</small>
-        )}
+        <small>🆔 RG: {registro.rg || "Não informado"}</small>
+
+        {registro.editadoPor && <small>✏️ {registro.editadoPor}</small>}
+
         {registro.destino && (
           <p>
             <strong>Destino:</strong> {registro.destino}
           </p>
         )}
-        {(registro.horaSaida || registro.horaRetorno) && (
+        {(registro.horaSaida || registro.horaInicio) && (
           <p>
-            <strong>Horário:</strong> {registro.horaSaida || "--"} → {registro.horaRetorno || "--"}
+            <strong>Horário:</strong>{" "}
+            {ordenarHorarios(registro.horaSaida, registro.horaInicio)}
           </p>
         )}
-        {registro.observacao && (
+        {registro.observacoes && (
           <p>
-            <strong>Observações:</strong> {registro.observacao}
+            <strong>Observações:</strong> {registro.observacoes}
           </p>
         )}
       </div>
-
-      <div className="dados-km flex justify-between mt-2 text-center text-xs">
+      <div className="dados-km">
         <div>
           <strong>Inicial</strong>
           <p>{getKm(registro.kmIda, registro.kmInicial)} km</p>
@@ -283,19 +304,12 @@ const RegistroCard = ({ registro, onEditar, onExcluir }) => (
         </div>
       </div>
     </div>
-
-    <div className="registro-actions flex justify-end gap-2 mt-2">
-      <button
-        className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600 transition"
-        onClick={onEditar}
-      >
-        ✏️ Editar
+    <div className="registro-actions">
+      <button className="btn-editar" onClick={onEditar}>
+        <Pencil size={16} /> Editar
       </button>
-      <button
-        className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white rounded-md text-sm hover:bg-red-600 transition"
-        onClick={onExcluir}
-      >
-        🗑️ Excluir
+      <button className="btn-excluir" onClick={onExcluir}>
+        <Trash2 size={16} /> Excluir
       </button>
     </div>
   </div>
