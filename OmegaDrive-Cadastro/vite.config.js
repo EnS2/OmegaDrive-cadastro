@@ -21,6 +21,7 @@ export default defineConfig({
     extensions: [".js", ".jsx", ".ts", ".tsx", ".json"],
   },
   server: {
+    host: true, // <- Esta linha permite o acesso externo (via IP)
     port: 5173,
     open: true,
     strictPort: true,
