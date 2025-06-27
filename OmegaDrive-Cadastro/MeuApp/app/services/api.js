@@ -1,7 +1,7 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const BASE_URL = "http://192.168.0.100:4000/api"; // <- IP da sua máquina ou domínio
+const BASE_URL = "http://192.168.0.100:4000/api"; // IP do seu backend
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -12,9 +12,10 @@ const api = axios.create({
   timeout: 10000,
 });
 
+// Interceptador para enviar token JWT em todas as requisições se existir
 api.interceptors.request.use(
   async (config) => {
-    const token = await AsyncStorage.getItem("token"); // busca o token
+    const token = await AsyncStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -23,6 +24,7 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// Função para formatar data no padrão ISO yyyy-mm-dd para backend
 const formatarDataParaBackend = (dateValue) => {
   const date = new Date(dateValue);
   const ano = date.getFullYear();
@@ -31,6 +33,7 @@ const formatarDataParaBackend = (dateValue) => {
   return `${ano}-${mes}-${dia}`;
 };
 
+// Adapta o payload do frontend para o formato esperado pelo backend
 const adaptarPayloadParaBackend = (payloadFrontend) => ({
   rgCondutor: payloadFrontend.rgCondutor,
   dataMarcada: formatarDataParaBackend(payloadFrontend.dataMarcada),
@@ -48,6 +51,7 @@ const adaptarPayloadParaBackend = (payloadFrontend) => ({
   placa: payloadFrontend.placa,
 });
 
+// Salvar registro: cria ou atualiza dependendo se registro.id existe
 export const salvarRegistro = async (registro, payloadFrontend) => {
   try {
     const payloadBackend = adaptarPayloadParaBackend(payloadFrontend);
@@ -60,6 +64,7 @@ export const salvarRegistro = async (registro, payloadFrontend) => {
   }
 };
 
+// Buscar registros por data
 export const buscarRegistrosDoDia = async (data) => {
   try {
     const dataFormatada = formatarDataParaBackend(data);
@@ -70,6 +75,7 @@ export const buscarRegistrosDoDia = async (data) => {
   }
 };
 
+// Deletar registro por id
 export const deletarRegistro = async (id) => {
   try {
     await api.delete(`/registrar/${id}`);
@@ -78,6 +84,7 @@ export const deletarRegistro = async (id) => {
   }
 };
 
+// Função de login, enviando email e password para backend
 export const login = async ({ email, password }) => {
   try {
     const response = await api.post("/login", { email, password });
@@ -87,9 +94,10 @@ export const login = async ({ email, password }) => {
   }
 };
 
-export const cadastrar = async ({ name, email, password }) => {
+// Função de cadastro, adaptada para os campos do frontend: nome, email, senha
+export const cadastrar = async ({ nome, email, senha }) => {
   try {
-    const response = await api.post("/cadastro", { name, email, password });
+    const response = await api.post("/cadastro", { nome, email, senha });
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.error || error.message);

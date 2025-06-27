@@ -9,18 +9,20 @@ import {
   StyleSheet,
 } from "react-native";
 
-import Omega from "../../assets/Omega.png";
+import Omega from "../../assets/Omega.png"; // mesma logo usada no login
 
-export default function LoginScreen({ navigation }) {
+export default function CadastroScreen({ navigation }) {
+  const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [senha, setSenha] = useState("");
 
-  async function handleLogin() {
+  async function handleCadastro() {
     try {
-      Alert.alert("Sucesso", "Login realizado com sucesso!");
+      // Aqui você pode substituir por uma chamada real à API
+      Alert.alert("Sucesso", "Usuário cadastrado com sucesso!");
     } catch (error) {
-      console.error("Erro ao fazer login:", error);
-      Alert.alert("Erro", "Login falhou. Verifique suas credenciais.");
+      console.error("Erro no cadastro:", error);
+      Alert.alert("Erro", "Falha ao cadastrar usuário.");
     }
   }
 
@@ -29,36 +31,42 @@ export default function LoginScreen({ navigation }) {
       <View style={styles.card}>
         <Image source={Omega} style={styles.logo} resizeMode="cover" />
         <Text style={styles.title}>Grupo Omega</Text>
-        <Text style={styles.header}>Login</Text>
+        <Text style={styles.header}>Cadastro de Usuários</Text>
 
         <TextInput
+          placeholder="Nome"
+          placeholderTextColor="#bbb"
+          style={styles.input}
+          value={nome}
+          onChangeText={setNome}
+        />
+        <TextInput
           placeholder="E-mail"
-          placeholderTextColor="#555"
+          placeholderTextColor="#bbb"
           style={styles.input}
           keyboardType="email-address"
           autoCapitalize="none"
           value={email}
           onChangeText={setEmail}
         />
-
         <TextInput
           placeholder="Senha"
-          placeholderTextColor="#555"
+          placeholderTextColor="#bbb"
           style={styles.input}
           secureTextEntry
-          value={password}
-          onChangeText={setPassword}
+          value={senha}
+          onChangeText={setSenha}
         />
 
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Entrar</Text>
+        <TouchableOpacity style={styles.button} onPress={handleCadastro}>
+          <Text style={styles.buttonText}>Cadastrar</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.linkButton}
-          onPress={() => navigation.navigate("Cadastro")}
+          onPress={() => navigation.goBack()}
         >
-          <Text style={styles.linkText}>Criar Novo Usuário?</Text>
+          <Text style={styles.linkText}>Voltar para Login</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -76,7 +84,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#2E2E4D",
     padding: 30,
     borderRadius: 16,
-    width: "90%",
+    width: "85%",
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 6 },
@@ -87,11 +95,10 @@ const styles = StyleSheet.create({
   logo: {
     width: 80,
     height: 80,
-    marginBottom: 10,
-    alignSelf: "center",
     borderRadius: 40,
     overflow: "hidden",
     backgroundColor: "#fff",
+    marginBottom: 10,
   },
   title: {
     fontSize: 22,
@@ -103,15 +110,16 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "#fff",
     marginBottom: 20,
+    fontWeight: "bold",
   },
   input: {
     width: "100%",
-    backgroundColor: "#EEF1FF",
+    backgroundColor: "#3B3B5C",
     borderRadius: 999,
     paddingVertical: 14,
     paddingHorizontal: 20,
     marginBottom: 14,
-    color: "#000",
+    color: "#fff",
   },
   button: {
     width: "100%",
@@ -128,10 +136,15 @@ const styles = StyleSheet.create({
   },
   linkButton: {
     marginTop: 20,
+    borderWidth: 1,
+    borderColor: "#5A5CFF",
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    borderRadius: 999,
   },
   linkText: {
     color: "#8A8DFF",
-    textDecorationLine: "underline",
+    textDecorationLine: "none",
     fontSize: 14,
   },
 });
