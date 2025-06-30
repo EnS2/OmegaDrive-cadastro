@@ -9,7 +9,9 @@ import {
   StyleSheet,
 } from "react-native";
 
-import Omega from "../../assets/Omega.png"; // mesma logo usada no login
+import Omega from "../../assets/Omega.png";
+// 🚀 Aqui está o import certo que vai funcionar
+import { cadastrar } from "../services/api";
 
 export default function CadastroScreen({ navigation }) {
   const [nome, setNome] = useState("");
@@ -18,11 +20,22 @@ export default function CadastroScreen({ navigation }) {
 
   async function handleCadastro() {
     try {
-      // Aqui você pode substituir por uma chamada real à API
-      Alert.alert("Sucesso", "Usuário cadastrado com sucesso!");
+      if (!nome || !email || !senha) {
+        Alert.alert("Atenção", "Preencha todos os campos.");
+        return;
+      }
+
+      await cadastrar({ nome, email, senha });
+
+      Alert.alert("Sucesso", "Usuário cadastrado com sucesso!", [
+        {
+          text: "OK",
+          onPress: () => navigation.navigate("Login"),
+        },
+      ]);
     } catch (error) {
-      console.error("Erro no cadastro:", error);
-      Alert.alert("Erro", "Falha ao cadastrar usuário.");
+      console.error("Erro no cadastro:", error.message);
+      Alert.alert("Erro", error.message || "Falha ao cadastrar usuário.");
     }
   }
 

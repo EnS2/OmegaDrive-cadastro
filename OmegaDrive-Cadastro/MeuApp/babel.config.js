@@ -6,10 +6,12 @@ module.exports = function (api) {
       [
         "module-resolver",
         {
+          extensions: [".js", ".jsx", ".ts", ".tsx", ".json"],
           alias: {
-            "@": "./app",
-            "@services": "./app/services",
-            "@login": "./app/Login",
+            "@": "./MeuApp",
+            "@services": "./MeuApp/app/services",
+            "@login": "./MeuApp/app/Login",
+            "@cadastro": "./MeuApp/app/Cadastro",
           },
         },
       ],
