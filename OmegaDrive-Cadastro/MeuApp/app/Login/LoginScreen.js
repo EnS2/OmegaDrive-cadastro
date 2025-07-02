@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,16 +9,36 @@ import {
   Alert,
   StyleSheet,
 } from "react-native";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Omega from "../../assets/Omega.png";
+import { login } from "../services/api"; // função da sua API
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  // Verifica se já tem token salvo
+  useEffect(() => {
+    const verificarToken = async () => {
+      const token = await AsyncStorage.getItem("token");
+      if (token) {
+        navigation.navigate("Dashboard");
+      }
+    };
+    verificarToken();
+  }, []);
+
   async function handleLogin() {
     try {
-      Alert.alert("Sucesso", "Login realizado com sucesso!");
+      const resposta = await login(email, password);
+
+      if (resposta.token) {
+        await AsyncStorage.setItem("token", resposta.token);
+        navigation.navigate("Dashboard");
+        Alert.alert("Sucesso", "Login realizado com sucesso!");
+      } else {
+        Alert.alert("Erro", "Credenciais inválidas.");
+      }
     } catch (error) {
       console.error("Erro ao fazer login:", error);
       Alert.alert("Erro", "Login falhou. Verifique suas credenciais.");

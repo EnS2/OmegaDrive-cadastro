@@ -1,7 +1,7 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// IP da sua máquina (sem /api no final)
+// IP do backend - use o IP correto da sua máquina
 const BASE_URL = "http://10.10.20.117:4000";
 
 const api = axios.create({
@@ -13,7 +13,7 @@ const api = axios.create({
   timeout: 10000,
 });
 
-// Interceptador: inclui token JWT em todas as requisições
+// Interceptor para incluir token JWT em todas as requisições
 api.interceptors.request.use(
   async (config) => {
     const token = await AsyncStorage.getItem("token");
@@ -25,7 +25,7 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Formata data como yyyy-mm-dd
+// Função para formatar data para yyyy-mm-dd (backend espera neste formato)
 const formatarDataParaBackend = (data) => {
   const d = new Date(data);
   const ano = d.getFullYear();
@@ -43,17 +43,17 @@ const adaptarPayloadParaBackend = (dados) => ({
   destino: dados.destino || null,
   kmIda: isNaN(Number(dados.kmIda)) ? 0 : Number(dados.kmIda),
   kmVolta: isNaN(Number(dados.kmVolta)) ? 0 : Number(dados.kmVolta),
-  observacao: dados.observacoes || null,
+  observacoes: dados.observacoes || null,
   veiculo: dados.veiculo,
   placa: dados.placa,
 });
 
-// Cria ou atualiza um registro
-export const salvarRegistro = async (registro, dados) => {
+// Criar ou atualizar registro
+export const salvarRegistro = async (id, dados) => {
   try {
     const payload = adaptarPayloadParaBackend(dados);
-    const response = registro?.id
-      ? await api.put(`/registrar/${registro.id}`, payload)
+    const response = id
+      ? await api.put(`/registrar/${id}`, payload)
       : await api.post("/registrar", payload);
     return response.data;
   } catch (error) {
@@ -61,7 +61,7 @@ export const salvarRegistro = async (registro, dados) => {
   }
 };
 
-// Busca registros de um dia específico
+// Buscar registros de um dia
 export const buscarRegistrosDoDia = async (data) => {
   try {
     const dataFormatada = formatarDataParaBackend(data);
@@ -72,7 +72,7 @@ export const buscarRegistrosDoDia = async (data) => {
   }
 };
 
-// Exclui um registro por ID
+// Deletar registro por ID
 export const deletarRegistro = async (id) => {
   try {
     await api.delete(`/registrar/${id}`);
@@ -81,8 +81,8 @@ export const deletarRegistro = async (id) => {
   }
 };
 
-// Login
-export const login = async ({ email, password }) => {
+// Login - recebe email e password separados
+export const login = async (email, password) => {
   try {
     const response = await api.post("/login", { email, password });
     return response.data;
@@ -91,7 +91,7 @@ export const login = async ({ email, password }) => {
   }
 };
 
-// Cadastro
+// Cadastro - recebe objeto com nome, email e senha
 export const cadastrar = async ({ nome, email, senha }) => {
   try {
     const response = await api.post("/cadastro", {
