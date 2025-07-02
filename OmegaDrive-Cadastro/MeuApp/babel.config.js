@@ -8,10 +8,14 @@ module.exports = function (api) {
         {
           extensions: [".js", ".jsx", ".ts", ".tsx", ".json"],
           alias: {
-            "@": "./MeuApp",
-            "@services": "./MeuApp/app/services",
-            "@login": "./MeuApp/app/Login",
-            "@cadastro": "./MeuApp/app/Cadastro",
+            "@": "./", // base raiz do projeto
+            "@app": "./app",
+            "@services": "./app/services",
+            "@login": "./app/Login",
+            "@cadastro": "./app/Cadastro",
+            "@components": "./components",
+            "@styles": "./Style",
+            "@site": "./Site",
           },
         },
       ],

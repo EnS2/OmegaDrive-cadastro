@@ -1,7 +1,7 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// IP real da sua máquina (sem /api no final)
+// IP da sua máquina (sem /api no final)
 const BASE_URL = "http://10.10.20.117:4000";
 
 const api = axios.create({
@@ -13,7 +13,7 @@ const api = axios.create({
   timeout: 10000,
 });
 
-// Interceptador para enviar token JWT automaticamente
+// Interceptador: inclui token JWT em todas as requisições
 api.interceptors.request.use(
   async (config) => {
     const token = await AsyncStorage.getItem("token");
@@ -25,47 +25,43 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Utilitário: formata data como "yyyy-mm-dd"
-const formatarDataParaBackend = (dateValue) => {
-  const date = new Date(dateValue);
-  const ano = date.getFullYear();
-  const mes = String(date.getMonth() + 1).padStart(2, "0");
-  const dia = String(date.getDate()).padStart(2, "0");
+// Formata data como yyyy-mm-dd
+const formatarDataParaBackend = (data) => {
+  const d = new Date(data);
+  const ano = d.getFullYear();
+  const mes = String(d.getMonth() + 1).padStart(2, "0");
+  const dia = String(d.getDate()).padStart(2, "0");
   return `${ano}-${mes}-${dia}`;
 };
 
-// Adapta os campos do frontend para o backend
-const adaptarPayloadParaBackend = (payloadFrontend) => ({
-  rgCondutor: payloadFrontend.rgCondutor,
-  dataMarcada: formatarDataParaBackend(payloadFrontend.dataMarcada),
-  horaInicio: payloadFrontend.horaInicio || null,
-  horaSaida: payloadFrontend.horaSaida || null,
-  destino: payloadFrontend.destino || null,
-  kmIda: isNaN(Number(payloadFrontend.kmIda))
-    ? 0
-    : Number(payloadFrontend.kmIda),
-  kmVolta: isNaN(Number(payloadFrontend.kmVolta))
-    ? 0
-    : Number(payloadFrontend.kmVolta),
-  observacao: payloadFrontend.observacoes || null,
-  veiculo: payloadFrontend.veiculo,
-  placa: payloadFrontend.placa,
+// Mapeia os campos do frontend para o backend
+const adaptarPayloadParaBackend = (dados) => ({
+  rgCondutor: dados.rgCondutor,
+  dataMarcada: formatarDataParaBackend(dados.dataMarcada),
+  horaInicio: dados.horaInicio || null,
+  horaSaida: dados.horaSaida || null,
+  destino: dados.destino || null,
+  kmIda: isNaN(Number(dados.kmIda)) ? 0 : Number(dados.kmIda),
+  kmVolta: isNaN(Number(dados.kmVolta)) ? 0 : Number(dados.kmVolta),
+  observacao: dados.observacoes || null,
+  veiculo: dados.veiculo,
+  placa: dados.placa,
 });
 
 // Cria ou atualiza um registro
-export const salvarRegistro = async (registro, payloadFrontend) => {
+export const salvarRegistro = async (registro, dados) => {
   try {
-    const payloadBackend = adaptarPayloadParaBackend(payloadFrontend);
+    const payload = adaptarPayloadParaBackend(dados);
     const response = registro?.id
-      ? await api.put(`/registrar/${registro.id}`, payloadBackend)
-      : await api.post("/registrar", payloadBackend);
+      ? await api.put(`/registrar/${registro.id}`, payload)
+      : await api.post("/registrar", payload);
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.error || error.message);
   }
 };
 
-// Lista registros de uma data
+// Busca registros de um dia específico
 export const buscarRegistrosDoDia = async (data) => {
   try {
     const dataFormatada = formatarDataParaBackend(data);
@@ -76,7 +72,7 @@ export const buscarRegistrosDoDia = async (data) => {
   }
 };
 
-// Exclui registro por ID
+// Exclui um registro por ID
 export const deletarRegistro = async (id) => {
   try {
     await api.delete(`/registrar/${id}`);
@@ -85,7 +81,7 @@ export const deletarRegistro = async (id) => {
   }
 };
 
-// Login de usuário
+// Login
 export const login = async ({ email, password }) => {
   try {
     const response = await api.post("/login", { email, password });
@@ -95,7 +91,7 @@ export const login = async ({ email, password }) => {
   }
 };
 
-// Cadastro de usuário - envia campos com os nomes esperados pelo backend
+// Cadastro
 export const cadastrar = async ({ nome, email, senha }) => {
   try {
     const response = await api.post("/cadastro", {
