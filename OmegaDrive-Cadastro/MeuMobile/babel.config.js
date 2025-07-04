@@ -8,14 +8,17 @@ module.exports = function (api) {
         {
           extensions: [".js", ".jsx", ".ts", ".tsx", ".json"],
           alias: {
-            "@": "./", // raiz do projeto
-            "@app": "./app",
-            "@services": "./app/services",
-            "@login": "./app/Login",
-            "@cadastro": "./app/Cadastro",
-            "@components": "./components",
-            "@styles": "./app/Site/Style", // ✅ atualizado aqui
-            "@site": "./app/Site",
+            "@": "./",                        // Raiz do projeto
+            "@app": "./app",                  // Pasta app principal
+            "@login": "./app/Login",          // Telas de login
+            "@cadastro": "./app/Cadastro",    // Telas de cadastro
+            "@site": "./app/Site",            // Outras telas
+            "@styles": "./app/Site/Style",    // Estilos customizados
+            "@services": "./app/services",    // API e serviços
+            "@components": "./components",    // Componentes reutilizáveis
+            "@assets": "./assets",            // Imagens e mídias
+            "@constants": "./constants",      // Constantes do projeto
+            "@hooks": "./hooks",              // Hooks customizados
           },
         },
       ],

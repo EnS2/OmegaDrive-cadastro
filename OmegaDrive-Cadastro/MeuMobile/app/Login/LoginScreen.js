@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unresolved */
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from "react";
 import {
@@ -10,14 +11,14 @@ import {
   StyleSheet,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import Omega from "../../assets/Omega.png";
-import { login } from "../services/api"; // função da sua API
+
+import Omega from "@assets/Omega.png"; // ✅ usando alias
+import { login } from "@services/api"; // ✅ usando alias
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Verifica se já tem token salvo
   useEffect(() => {
     const verificarToken = async () => {
       const token = await AsyncStorage.getItem("token");
