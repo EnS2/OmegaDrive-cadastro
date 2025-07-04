@@ -1,19 +1,12 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Alert,
-  Modal,
-} from "react-native";
-// Para o calendário, recomendo instalar: react-native-calendars
-// import { Calendar } from 'react-native-calendars';
-
-// Você pode usar @expo/vector-icons para ícones ou react-native-lucide
-// import { Car, Plus, Pencil, Trash2 } from "react-native-lucide";
-
+import { useEffect, useState } from "react";
+import { Car, Plus } from "lucide-react";
+import Calendar from "react-calendar";
+import "react-calendar/dist/Calendar.css";
+import "./Dashboard.css";
+import "@/components/CalendarComponent.css";
+import "@/components/ResumoDia.css";
+import "@/components/ModalRegistro.css";
+import { toast } from "sonner";
 import ModalRegistro from "@/components/ModalRegistro";
 import {
   salvarRegistro,
@@ -35,37 +28,42 @@ const formatarDataExtensa = (data) =>
 
 const getKm = (a, b) => (a != null ? a : b != null ? b : 0);
 
-const ordenarHorarios = (h1, h2) => {
-  if (!h1 && !h2) return "-- → --";
-  if (!h1) return `-- → ${h2}`;
-  if (!h2) return `${h1} → --`;
-
-  const [h1h, h1m] = h1.split(":").map(Number);
-  const [h2h, h2m] = h2.split(":").map(Number);
-  const t1 = h1h * 60 + h1m;
-  const t2 = h2h * 60 + h2m;
-
-  return t1 <= t2 ? `${h1} → ${h2}` : `${h2} → ${h1}`;
-};
-
-export default function Dashboard() {
+const Dashboard = () => {
   const [selectedDate, setSelectedDate] = useState(() => {
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    return now;
+    const salva = localStorage.getItem("selectedDate");
+    const d = salva ? new Date(salva) : new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
   });
+
   const [mostrarModal, setMostrarModal] = useState(false);
   const [registroEditando, setRegistroEditando] = useState(null);
   const [registros, setRegistros] = useState([]);
   const [totalViagens, setTotalViagens] = useState(0);
   const [kmTotal, setKmTotal] = useState(0);
 
-  // Carregar registros quando selectedDate muda
+  useEffect(() => {
+    document.body.style.backgroundColor = "#ffffff";
+    return () => {
+      document.body.style.backgroundColor = "";
+    };
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("selectedDate", selectedDate.toISOString());
+  }, [selectedDate]);
+
   useEffect(() => {
     const carregarRegistros = async () => {
       try {
+        if (!selectedDate || isNaN(selectedDate.getTime())) {
+          toast.error("Data inválida selecionada.");
+          return;
+        }
+
         const dataFormatada = selectedDate.toISOString().split("T")[0];
         const resposta = await buscarRegistrosDoDia(dataFormatada);
+
         const registrosConvertidos = resposta.map((r) => ({
           ...r,
           data: new Date(r.dataMarcada || r.data || selectedDate),
@@ -73,7 +71,7 @@ export default function Dashboard() {
         setRegistros(registrosConvertidos);
       } catch (error) {
         console.error(error);
-        Alert.alert("Erro", "Erro ao carregar registros do servidor");
+        toast.error("Erro ao carregar registros do servidor");
         setRegistros([]);
       }
     };
@@ -101,7 +99,7 @@ export default function Dashboard() {
     const { veiculo, condutor, rgCondutor, kmIda, kmVolta, horaSaida } =
       registro;
     if (!veiculo || !condutor || !rgCondutor || !kmIda || !kmVolta || !horaSaida) {
-      Alert.alert("Erro", "Preencha todos os campos obrigatórios.");
+      toast.error("Preencha todos os campos obrigatórios.");
       return false;
     }
     return true;
@@ -133,125 +131,85 @@ export default function Dashboard() {
         setRegistros((prev) =>
           prev.map((r) => (r.id === novoRegistro.id ? novoRegistro : r))
         );
-        Alert.alert("Sucesso", "Registro atualizado.");
+        toast.success("Registro atualizado.");
       } else {
         setRegistros((prev) => [...prev, novoRegistro]);
-        Alert.alert("Sucesso", "Registro adicionado.");
+        toast.success("Registro adicionado.");
       }
 
       setMostrarModal(false);
       setRegistroEditando(null);
     } catch (error) {
       console.error(error);
-      Alert.alert("Erro", "Erro ao salvar o registro.");
+      toast.error("Erro ao salvar o registro.");
     }
   };
 
   const handleExcluirRegistro = async (id) => {
-    Alert.alert(
-      "Confirmar exclusão",
-      "Deseja excluir este registro?",
-      [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Excluir",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await deletarRegistro(id);
-              setRegistros((prev) => prev.filter((r) => r.id !== id));
-              Alert.alert("Sucesso", "Registro excluído.");
-            } catch (error) {
-              console.error(error);
-              Alert.alert("Erro", "Erro ao excluir o registro.");
-            }
-          },
-        },
-      ],
-      { cancelable: true }
-    );
+    const confirmar = window.confirm("Deseja excluir este registro?");
+    if (!confirmar) return;
+
+    try {
+      await deletarRegistro(id);
+      setRegistros((prev) => prev.filter((r) => r.id !== id));
+      toast.success("Registro excluído.");
+    } catch (error) {
+      console.error(error);
+      toast.error("Erro ao excluir o registro.");
+    }
   };
 
-  // Placeholder simples para calendário (você pode usar react-native-calendars)
-  // Exemplo: mostrar a data e botões para avançar/voltar data
-
   return (
-    <View style={styles.container}>
-      {/* Top bar */}
-      <View style={styles.topBar}>
-        {/* Ícone de carro */}
-        <Text style={styles.carIcon}>🚗</Text>
-        <View>
-          <Text style={styles.title}>Grupo Ômega</Text>
-          <Text style={styles.subtitle}>Controle de KM</Text>
-        </View>
-      </View>
+    <div className="dashboard-container">
+      <header className="top-bar">
+        <div className="branding-left">
+          <Car className="car-icon" />
+          <div className="branding-texts">
+            <h1 className="title">Grupo Ômega</h1>
+            <p className="subtitle">Controle de KM</p>
+          </div>
+        </div>
+      </header>
 
-      <View style={styles.mainContent}>
-        {/* Sidebar */}
-        <View style={styles.sidebar}>
-          <View style={styles.calendarSummaryCard}>
-            <Text style={styles.sectionTitle}>Calendário</Text>
-            <Text style={styles.selectedDateText}>
-              {formatarDataExtensa(selectedDate)}
-            </Text>
+      <main className="main-content">
+        <aside className="sidebar">
+          <div className="calendar-summary-card">
+            <div className="calendar-wrapper">
+              <h3>Calendário</h3>
+              <span>{formatarDataExtensa(selectedDate)}</span>
+              <Calendar
+                onChange={onDateChange}
+                value={selectedDate}
+                locale="pt-BR"
+              />
+            </div>
 
-            {/* Calendário substituído por botões */}
-            <View style={styles.calendarButtons}>
-              <TouchableOpacity
-                onPress={() => {
-                  const d = new Date(selectedDate);
-                  d.setDate(d.getDate() - 1);
-                  onDateChange(d);
-                }}
-                style={styles.dateButton}
-              >
-                <Text>◀</Text>
-              </TouchableOpacity>
-
-              <Text style={styles.selectedDateTextShort}>
-                {formatarDataBR(selectedDate)}
-              </Text>
-
-              <TouchableOpacity
-                onPress={() => {
-                  const d = new Date(selectedDate);
-                  d.setDate(d.getDate() + 1);
-                  onDateChange(d);
-                }}
-                style={styles.dateButton}
-              >
-                <Text>▶</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.resumoContainer}>
-              <Text style={styles.sectionTitle}>Resumo do Dia</Text>
-              <Text style={styles.selectedDateText}>{formatarDataBR(selectedDate)}</Text>
-              <View style={styles.resumoDados}>
+            <div className="resumo-container">
+              <h3>Resumo do Dia</h3>
+              <span>{formatarDataBR(selectedDate)}</span>
+              <div className="resumo-dados">
                 <ResumoItem label="Viagens" valor={totalViagens} />
                 <ResumoItem label="KM Total" valor={`${kmTotal} km`} />
-              </View>
-            </View>
-          </View>
-        </View>
+              </div>
+            </div>
+          </div>
+        </aside>
 
-        {/* Registros */}
-        <View style={styles.recordsSection}>
-          <TouchableOpacity
-            style={styles.newRecordButton}
-            onPress={() => {
+        <section className="records-section">
+          <button
+            className="new-record-button"
+            onClick={() => {
               setRegistroEditando(null);
               setMostrarModal(true);
             }}
           >
-            <Text style={styles.newRecordButtonText}>+ Adicionar Registro</Text>
-          </TouchableOpacity>
+            <Plus size={16} /> Adicionar Registro
+          </button>
 
-          <ScrollView style={styles.registrosDoDia}>
-            <Text style={styles.sectionTitle}>Registros do Dia</Text>
+          <div className="registros-do-dia">
+            <h3>Registros do Dia</h3>
             {registros.length === 0 ? (
-              <Text>Nenhum registro encontrado.</Text>
+              <p>Nenhum registro encontrado.</p>
             ) : (
               registros.map((r) => (
                 <RegistroCard
@@ -265,186 +223,79 @@ export default function Dashboard() {
                 />
               ))
             )}
-          </ScrollView>
-        </View>
-      </View>
+          </div>
+        </section>
+      </main>
 
       {mostrarModal && (
-        <Modal visible={mostrarModal} animationType="slide" transparent={false}>
-          <ModalRegistro
-            dataSelecionada={selectedDate}
-            onClose={() => {
-              setMostrarModal(false);
-              setRegistroEditando(null);
-            }}
-            onSalvar={handleSalvarRegistro}
-            registro={registroEditando}
-          />
-        </Modal>
+        <ModalRegistro
+          dataSelecionada={selectedDate}
+          onClose={() => {
+            setMostrarModal(false);
+            setRegistroEditando(null);
+          }}
+          onSalvar={handleSalvarRegistro}
+          registro={registroEditando}
+        />
       )}
-    </View>
+    </div>
   );
-}
+};
 
 const ResumoItem = ({ label, valor }) => (
-  <View style={styles.resumoCard}>
-    <Text style={styles.resumoLabel}>{label}</Text>
-    <Text style={styles.resumoValor}>{valor}</Text>
-  </View>
+  <div className="resumo-card">
+    <div className="resumo-label">{label}</div>
+    <div className="resumo-valor">{valor}</div>
+  </div>
 );
 
 const RegistroCard = ({ registro, onEditar, onExcluir }) => (
-  <View style={styles.registroCard}>
-    <View style={styles.registroHeader}>
-      <Text>🚗 {registro.veiculo || "Veículo não informado"}</Text>
-      <Text>📅 {formatarDataBR(registro.data)}</Text>
-    </View>
+  <div className="registro-card">
+    <div className="registro-header">
+      <span>🚗 {registro.veiculo || "Veículo não informado"}</span>
+      <span>📅 {formatarDataBR(registro.data)}</span>
+    </div>
 
-    <View style={styles.registroBody}>
-      <View style={styles.dadosCondutor}>
-        <Text style={styles.smallText}>🧑 {registro.condutor || "Condutor não informado"}</Text>
-        <Text style={styles.smallText}>🆔 RG: {registro.rg || "Não informado"}</Text>
-        {registro.editadoPor && <Text style={styles.smallText}>✏️ {registro.editadoPor}</Text>}
+    <div className="registro-body">
+      <div className="dados-condutor">
+        <small>🧑 {registro.condutor || "Condutor não informado"}</small>
+        <small>🆔 RG: {registro.rg || "Não informado"}</small>
+
+        {registro.editadoPor && <small>✏️ {registro.editadoPor}</small>}
 
         {registro.destino && (
-          <Text>
-            <Text style={{ fontWeight: "bold" }}>Destino: </Text>
-            {registro.destino}
-          </Text>
+          <p>
+            <strong>Destino:</strong> {registro.destino}
+          </p>
         )}
         {(registro.horaSaida || registro.horaInicio) && (
-          <Text>
-            <Text style={{ fontWeight: "bold" }}>Horário: </Text>
-            {ordenarHorarios(registro.horaSaida, registro.horaInicio)}
-          </Text>
+          <p>
+            <strong>Horário:</strong> {registro.horaSaida || "--"} →{" "}
+            {registro.horaInicio || "--"}
+          </p>
         )}
         {registro.observacoes && (
-          <Text>
-            <Text style={{ fontWeight: "bold" }}>Observações: </Text>
-            {registro.observacoes}
-          </Text>
+          <p>
+            <strong>Observações:</strong> {registro.observacoes}
+          </p>
         )}
-      </View>
-      <View style={styles.dadosKm}>
-        <View>
-          <Text style={{ fontWeight: "bold" }}>Inicial</Text>
-          <Text>{getKm(registro.kmIda, registro.kmInicial)} km</Text>
-        </View>
-        <View>
-          <Text style={{ fontWeight: "bold" }}>Final</Text>
-          <Text>{getKm(registro.kmVolta, registro.kmFinal)} km</Text>
-        </View>
-      </View>
-    </View>
-
-    <View style={styles.registroActions}>
-      <TouchableOpacity style={styles.btnEditar} onPress={onEditar}>
-        <Text>✏️ Editar</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.btnExcluir} onPress={onExcluir}>
-        <Text>🗑 Excluir</Text>
-      </TouchableOpacity>
-    </View>
-  </View>
+      </div>
+      <div className="dados-km">
+        <div>
+          <strong>Inicial</strong>
+          <p>{getKm(registro.kmIda, registro.kmInicial)} km</p>
+        </div>
+        <div>
+          <strong>Final</strong>
+          <p>{getKm(registro.kmVolta, registro.kmFinal)} km</p>
+        </div>
+      </div>
+    </div>
+    <div className="registro-actions">
+      <button onClick={onEditar}>Editar</button>
+      <button onClick={onExcluir}>Excluir</button>
+    </div>
+  </div>
 );
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  topBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 12,
-    borderBottomWidth: 1,
-    borderColor: "#ddd",
-  },
-  carIcon: { fontSize: 24, marginRight: 10 },
-  title: { fontSize: 20, fontWeight: "bold" },
-  subtitle: { fontSize: 14, color: "#666" },
-  mainContent: { flex: 1, flexDirection: "row" },
-  sidebar: {
-    width: 300,
-    padding: 12,
-    borderRightWidth: 1,
-    borderColor: "#ddd",
-  },
-  calendarSummaryCard: { marginBottom: 12 },
-  sectionTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 6 },
-  selectedDateText: { fontSize: 16, marginBottom: 8 },
-  calendarButtons: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  dateButton: {
-    padding: 8,
-    borderWidth: 1,
-    borderColor: "#888",
-    borderRadius: 4,
-    marginHorizontal: 12,
-  },
-  selectedDateTextShort: { fontSize: 16, width: 100, textAlign: "center" },
-  resumoContainer: { marginTop: 16 },
-  resumoDados: { flexDirection: "row", justifyContent: "space-between" },
-  resumoCard: {
-    padding: 10,
-    backgroundColor: "#eee",
-    borderRadius: 6,
-    marginRight: 8,
-    flex: 1,
-    alignItems: "center",
-  },
-  resumoLabel: { fontWeight: "bold", marginBottom: 4 },
-  resumoValor: { fontSize: 16 },
-  recordsSection: { flex: 1, padding: 12 },
-  newRecordButton: {
-    backgroundColor: "#007bff",
-    paddingVertical: 12,
-    paddingHorizontal: 18,
-    borderRadius: 6,
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  newRecordButtonText: { color: "#fff", fontWeight: "bold" },
-  registrosDoDia: { flex: 1 },
-  registroCard: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 6,
-    padding: 12,
-    marginBottom: 12,
-    backgroundColor: "#fafafa",
-  },
-  registroHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 8,
-  },
-  registroBody: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  dadosCondutor: { flex: 2, marginRight: 10 },
-  smallText: { fontSize: 12, color: "#555" },
-  dadosKm: {
-    flex: 1,
-    justifyContent: "space-between",
-  },
-  registroActions: {
-    marginTop: 12,
-    flexDirection: "row",
-    justifyContent: "flex-end",
-  },
-  btnEditar: {
-    marginRight: 12,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    backgroundColor: "#ffc107",
-    borderRadius: 4,
-  },
-  btnExcluir: {
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    backgroundColor: "#dc3545",
-    borderRadius: 4,
-  },
-});
+export default Dashboard;
