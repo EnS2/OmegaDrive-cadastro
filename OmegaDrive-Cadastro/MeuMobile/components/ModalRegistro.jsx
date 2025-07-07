@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import {
-    Modal,
     View,
     Text,
     TextInput,
@@ -16,15 +15,15 @@ const parseDate = (dateValue) => {
     return isNaN(d) ? "" : d.toISOString().split("T")[0];
 };
 
-const ModalRegistro = ({ visible, registro, onClose, onSalvar, dataSelecionada }) => {
+const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
     const [formData, setFormData] = useState({
         condutor: "",
-        rgCondutor: "",    // nome atualizado para rgCondutor (igual ao dashboard)
+        rgCondutor: "",
         veiculo: "",
         placa: "",
         destino: "",
-        kmIda: "",         // renomeado para kmIda (igual ao dashboard)
-        kmVolta: "",       // renomeado para kmVolta
+        kmIda: "",
+        kmVolta: "",
         horaInicio: "",
         horaSaida: "",
         editadoPor: "",
@@ -35,7 +34,7 @@ const ModalRegistro = ({ visible, registro, onClose, onSalvar, dataSelecionada }
         if (registro) {
             setFormData({
                 condutor: registro.condutor || "",
-                rgCondutor: registro.rgCondutor || "",   // alinhado com dashboard
+                rgCondutor: registro.rgCondutor || "",
                 veiculo: registro.veiculo || "",
                 placa: registro.placa || "",
                 destino: registro.destino || "",
@@ -99,7 +98,7 @@ const ModalRegistro = ({ visible, registro, onClose, onSalvar, dataSelecionada }
             id: registro?.id || null,
             condutor: formData.condutor,
             rgCondutor: formData.rgCondutor,
-            dataMarcada: parseDate(dataSelecionada), // data do dia selecionado no dashboard
+            dataMarcada: parseDate(dataSelecionada),
             horaInicio: formData.horaInicio,
             horaSaida: formData.horaSaida,
             destino: formData.destino,
@@ -124,66 +123,67 @@ const ModalRegistro = ({ visible, registro, onClose, onSalvar, dataSelecionada }
     };
 
     return (
-        <Modal visible={visible} animationType="slide" transparent>
-            <View style={styles.overlay}>
-                <View style={styles.modal}>
-                    <Text style={styles.title}>{registro ? "Editar Registro" : "Novo Registro"}</Text>
-                    <ScrollView>
-                        {/* Campos do formulário */}
-                        {[
-                            { id: "condutor", label: "Condutor" },
-                            // Atualizado id
-                            { id: "rgCondutor", label: "RG" },
-                            { id: "veiculo", label: "Veículo" },
-                            { id: "placa", label: "Placa" },
-                            { id: "destino", label: "Destino" },
-                            // Atualizado
-                            { id: "kmIda", label: "Km Inicial", keyboardType: "numeric" },
-                            // Atualizado
-                            { id: "kmVolta", label: "Km Final", keyboardType: "numeric" },
-                            { id: "horaInicio", label: "Hora de Início" },
-                            { id: "horaSaida", label: "Hora de Saída" },
-                            { id: "editadoPor", label: "Editado por" },
-                        ].map(({ id, label, keyboardType = "default" }) => (
-                            <TextInput
-                                key={id}
-                                style={styles.input}
-                                placeholder={label}
-                                value={formData[id]}
-                                onChangeText={(value) => handleChange(id, value)}
-                                keyboardType={keyboardType}
-                                autoCapitalize="none"
-                            />
-                        ))}
-
-                        {/* Mostrar data como texto separado */}
-                        <View style={{ marginVertical: 10 }}>
-                            <Text style={{ fontWeight: "bold", fontSize: 16, color: "#333" }}>
-                                Data: {parseDate(dataSelecionada)}
-                            </Text>
-                        </View>
-
+        <View style={styles.overlay}>
+            <View style={styles.modal}>
+                <Text style={styles.title}>
+                    {registro ? "Editar Registro" : "Novo Registro"}
+                </Text>
+                <ScrollView>
+                    {[
+                        { id: "condutor", label: "Condutor" },
+                        { id: "rgCondutor", label: "RG" },
+                        { id: "veiculo", label: "Veículo" },
+                        { id: "placa", label: "Placa" },
+                        { id: "destino", label: "Destino" },
+                        { id: "kmIda", label: "Km Inicial", keyboardType: "numeric" },
+                        { id: "kmVolta", label: "Km Final", keyboardType: "numeric" },
+                        { id: "horaInicio", label: "Hora de Início" },
+                        { id: "horaSaida", label: "Hora de Saída" },
+                        { id: "editadoPor", label: "Editado por" },
+                    ].map(({ id, label, keyboardType = "default" }) => (
                         <TextInput
-                            style={[styles.input, styles.textArea]}
-                            placeholder="Observações"
-                            value={formData.observacoes}
-                            onChangeText={(value) => handleChange("observacoes", value)}
-                            multiline
-                            numberOfLines={4}
+                            key={id}
+                            style={styles.input}
+                            placeholder={label}
+                            value={formData[id]}
+                            onChangeText={(value) => handleChange(id, value)}
+                            keyboardType={keyboardType}
+                            autoCapitalize="none"
                         />
+                    ))}
 
-                        <View style={styles.buttonContainer}>
-                            <TouchableOpacity style={[styles.button, styles.cancel]} onPress={onClose}>
-                                <Text style={[styles.buttonText, { color: "#444" }]}>Cancelar</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={[styles.button, styles.save]} onPress={handleSubmit}>
-                                <Text style={styles.buttonText}>Salvar</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </ScrollView>
-                </View>
+                    <View style={{ marginVertical: 10 }}>
+                        <Text style={{ fontWeight: "bold", fontSize: 16, color: "#333" }}>
+                            Data: {parseDate(dataSelecionada)}
+                        </Text>
+                    </View>
+
+                    <TextInput
+                        style={[styles.input, styles.textArea]}
+                        placeholder="Observações"
+                        value={formData.observacoes}
+                        onChangeText={(value) => handleChange("observacoes", value)}
+                        multiline
+                        numberOfLines={4}
+                    />
+
+                    <View style={styles.buttonContainer}>
+                        <TouchableOpacity
+                            style={[styles.button, styles.cancel]}
+                            onPress={onClose}
+                        >
+                            <Text style={[styles.buttonText, { color: "#444" }]}>Cancelar</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[styles.button, styles.save]}
+                            onPress={handleSubmit}
+                        >
+                            <Text style={styles.buttonText}>Salvar</Text>
+                        </TouchableOpacity>
+                    </View>
+                </ScrollView>
             </View>
-        </Modal>
+        </View>
     );
 };
 

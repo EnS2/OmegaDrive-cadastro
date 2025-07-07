@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable import/no-unresolved */
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from "react";
@@ -22,10 +23,28 @@ export default function LoginScreen({ navigation }) {
   useEffect(() => {
     const verificarToken = async () => {
       const token = await AsyncStorage.getItem("token");
-      if (token) {
-        navigation.navigate("Dashboard");
+      if (!token) return;
+
+      try {
+        const res = await fetch("http://SEU_BACKEND_URL/auth/me", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (res.ok) {
+          // Token válido
+          navigation.replace("Dashboard");
+        } else {
+          // Token inválido, remove e permanece na tela de login
+          await AsyncStorage.removeItem("token");
+        }
+      } catch (error) {
+        await AsyncStorage.removeItem("token");
       }
     };
+
     verificarToken();
   }, []);
 
@@ -35,7 +54,7 @@ export default function LoginScreen({ navigation }) {
 
       if (resposta.token) {
         await AsyncStorage.setItem("token", resposta.token);
-        navigation.navigate("Dashboard");
+        navigation.replace("Dashboard");
         Alert.alert("Sucesso", "Login realizado com sucesso!");
       } else {
         Alert.alert("Erro", "Credenciais inválidas.");
