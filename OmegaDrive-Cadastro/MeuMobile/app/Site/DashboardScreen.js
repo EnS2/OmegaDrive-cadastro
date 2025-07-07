@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-/* eslint-disable react-hooks/exhaustive-deps */
+// DashboardScreen.jsx - React Native
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -41,6 +41,7 @@ const DashboardScreen = () => {
 
   useEffect(() => {
     carregarRegistros();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate]);
 
   const carregarRegistros = async () => {
