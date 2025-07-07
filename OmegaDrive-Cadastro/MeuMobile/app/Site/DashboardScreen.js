@@ -106,7 +106,7 @@ const DashboardScreen = () => {
     <View style={styles.container}>
       <View style={styles.topBar}>
         <Car color="#fff" size={32} />
-        <View>
+        <View style={{ marginLeft: 12 }}>
           <Text style={styles.titulo}>Grupo Ômega</Text>
           <Text style={styles.subtitulo}>Controle de KM</Text>
         </View>
@@ -146,7 +146,9 @@ const DashboardScreen = () => {
             }}
           >
             <Plus color="#fff" size={18} />
-            <Text style={styles.buttonText}>Novo Registro</Text>
+            <Text style={[styles.buttonText, { marginLeft: 8 }]}>
+              Novo Registro
+            </Text>
           </TouchableOpacity>
 
           {registros.length === 0 ? (
@@ -193,7 +195,6 @@ const styles = StyleSheet.create({
     padding: 16,
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
   },
   titulo: {
     fontSize: 20,
@@ -239,7 +240,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
-    gap: 8,
     marginBottom: 16,
   },
   buttonText: {
