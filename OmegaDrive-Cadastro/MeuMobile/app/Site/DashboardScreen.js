@@ -1,5 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
-// DashboardScreen.jsx - React Native
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -20,12 +20,20 @@ import {
   salvarRegistro,
 } from "../services/api";
 
+// Formata data como "terça-feira, 9 de julho"
 const formatarData = (date) =>
-  new Date(date).toLocaleDateString("pt-BR", {
+  date.toLocaleDateString("pt-BR", {
     weekday: "long",
     day: "numeric",
     month: "long",
   });
+
+// Formata para yyyy-MM-dd
+const formatarDataSelecionada = (date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+    2,
+    "0"
+  )}-${String(date.getDate()).padStart(2, "0")}`;
 
 const DashboardScreen = () => {
   const [selectedDate, setSelectedDate] = useState(() => {
@@ -41,17 +49,28 @@ const DashboardScreen = () => {
 
   useEffect(() => {
     carregarRegistros();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate]);
 
   const carregarRegistros = async () => {
     try {
-      const dataStr = selectedDate.toISOString().split("T")[0];
+      const dataStr = formatarDataSelecionada(selectedDate);
       const resposta = await buscarRegistrosDoDia(dataStr);
-      const convertidos = resposta.map((r) => ({
-        ...r,
-        data: new Date(r.dataMarcada || r.data || selectedDate),
-      }));
+
+      const convertidos = resposta.map((r) => {
+        const original = r.dataMarcada || r.data || selectedDate;
+        // Corrige para criar data local sem UTC shift
+        const partes = new Date(original)
+          .toISOString()
+          .split("T")[0]
+          .split("-");
+        const dataCorrigida = new Date(
+          Number(partes[0]),
+          Number(partes[1]) - 1,
+          Number(partes[2])
+        );
+        return { ...r, data: dataCorrigida };
+      });
+
       setRegistros(convertidos);
 
       const soma = convertidos.reduce((acc, r) => {
@@ -60,6 +79,7 @@ const DashboardScreen = () => {
         const diff = volta - ida;
         return acc + (isNaN(diff) ? 0 : diff);
       }, 0);
+
       setKmTotal(soma);
     } catch (err) {
       Alert.alert("Erro", "Não foi possível carregar os registros.");
@@ -100,8 +120,6 @@ const DashboardScreen = () => {
     ]);
   };
 
-  const formatarDataSelecionada = selectedDate.toISOString().split("T")[0];
-
   return (
     <View style={styles.container}>
       <View style={styles.topBar}>
@@ -117,16 +135,24 @@ const DashboardScreen = () => {
           <Text style={styles.dataTexto}>{formatarData(selectedDate)}</Text>
           <Calendar
             onDayPress={(day) => {
-              const d = new Date(day.dateString);
-              d.setHours(0, 0, 0, 0);
+              const [year, month, dayNum] = day.dateString
+                .split("-")
+                .map(Number);
+              const d = new Date(year, month - 1, dayNum);
               setSelectedDate(d);
             }}
             markedDates={{
-              [formatarDataSelecionada]: {
+              [formatarDataSelecionada(selectedDate)]: {
                 selected: true,
                 marked: true,
                 selectedColor: "#7b2ff7",
               },
+            }}
+            theme={{
+              todayTextColor: "#9333ea",
+              arrowColor: "#9333ea",
+              selectedDayTextColor: "#fff",
+              selectedDayBackgroundColor: "#7b2ff7",
             }}
           />
 

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-// Base da API - usa proxy do Vite (ex: http://localhost:4000)
+// Base da API (usa proxy do Vite)
 const BASE_URL = "/api";
 
 const api = axios.create({
@@ -9,22 +9,27 @@ const api = axios.create({
     "Content-Type": "application/json",
     Accept: "application/json",
   },
-  timeout: 10000, // Aumentado de 5000ms para 10000ms
+  timeout: 10000,
 });
 
-// Interceptador para incluir token JWT no cabeçalho
+// Interceptador: inclui JWT e a origem web
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`;
     }
+    config.headers["x-plataforma"] = "web";
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Função que formata data para 'YYYY-MM-DD'
+/**
+ * Formata uma data em YYYY-MM-DD
+ * @param {string|Date} dateValue
+ * @returns {string}
+ */
 const formatarDataParaBackend = (dateValue) => {
   const date = new Date(dateValue);
   const ano = date.getFullYear();
@@ -33,50 +38,48 @@ const formatarDataParaBackend = (dateValue) => {
   return `${ano}-${mes}-${dia}`;
 };
 
-// Converte os dados do frontend para o formato aceito pelo backend
-const adaptarPayloadParaBackend = (payloadFrontend) => ({
-  rgCondutor: payloadFrontend.rgCondutor,
-  dataMarcada: formatarDataParaBackend(payloadFrontend.dataMarcada),
-  horaInicio: payloadFrontend.horaInicio || null,
-  horaSaida: payloadFrontend.horaSaida || null,
-  destino: payloadFrontend.destino || null,
-  kmIda: isNaN(Number(payloadFrontend.kmIda))
-    ? 0
-    : Number(payloadFrontend.kmIda),
-  kmVolta: isNaN(Number(payloadFrontend.kmVolta))
-    ? 0
-    : Number(payloadFrontend.kmVolta),
-  observacao: payloadFrontend.observacoes || null,
-  veiculo: payloadFrontend.veiculo,
-  placa: payloadFrontend.placa,
+/**
+ * Prepara payload para envio ao backend
+ * @param {object} dados
+ * @returns {object}
+ */
+const adaptarPayloadParaBackend = (dados) => ({
+  rgCondutor: dados.rgCondutor || "",
+  dataMarcada: formatarDataParaBackend(dados.dataMarcada),
+  horaInicio: dados.horaInicio || null,
+  horaSaida: dados.horaSaida || null,
+  destino: dados.destino || null,
+  kmIda: isNaN(Number(dados.kmIda)) ? 0 : Number(dados.kmIda),
+  kmVolta: isNaN(Number(dados.kmVolta)) ? 0 : Number(dados.kmVolta),
+  observacao: dados.observacao || null,
+  veiculo: dados.veiculo || "",
+  placa: dados.placa || "",
 });
 
 /**
  * Salva ou atualiza um registro
- * @param {Object|null} registro - Objeto com `id` se for edição
- * @param {Object} payloadFrontend - Dados do formulário
- * @returns {Promise<Object>} Registro salvo ou atualizado
+ * @param {object} registro - O registro (pode conter id)
+ * @param {object} dados - Dados do formulário
+ * @returns {Promise<object>}
  */
-export const salvarRegistro = async (registro, payloadFrontend) => {
+export const salvarRegistro = async (registro, dados) => {
   try {
-    const payloadBackend = adaptarPayloadParaBackend(payloadFrontend);
-
+    const payload = adaptarPayloadParaBackend(dados);
     const response = registro?.id
-      ? await api.put(`/registrar/${registro.id}`, payloadBackend)
-      : await api.post("/registrar", payloadBackend);
-
+      ? await api.put(`/registrar/${registro.id}`, payload)
+      : await api.post("/registrar", payload);
     return response.data;
   } catch (error) {
-    const msg = error.response?.data?.error || error.message;
+    const msg = error?.response?.data?.error || error.message;
     console.error("Erro ao salvar registro:", msg);
     throw new Error(msg);
   }
 };
 
 /**
- * Busca os registros do dia selecionado
- * @param {string|Date} data - Data no formato Date ou string
- * @returns {Promise<Array>} Lista de registros
+ * Busca registros por data
+ * @param {string|Date} data
+ * @returns {Promise<object[]>}
  */
 export const buscarRegistrosDoDia = async (data) => {
   try {
@@ -84,37 +87,38 @@ export const buscarRegistrosDoDia = async (data) => {
     const response = await api.get(`/registrar?data=${dataFormatada}`);
     return response.data;
   } catch (error) {
-    const msg = error.response?.data?.error || error.message;
+    const msg = error?.response?.data?.error || error.message;
     console.error("Erro ao buscar registros:", msg);
     throw new Error(msg);
   }
 };
 
 /**
- * Exclui um registro por ID
- * @param {string} id - ID do registro
+ * Deleta um registro por ID
+ * @param {string} id
+ * @returns {Promise<void>}
  */
 export const deletarRegistro = async (id) => {
   try {
     await api.delete(`/registrar/${id}`);
   } catch (error) {
-    const msg = error.response?.data?.error || error.message;
+    const msg = error?.response?.data?.error || error.message;
     console.error("Erro ao deletar registro:", msg);
     throw new Error(msg);
   }
 };
 
 /**
- * Realiza login do usuário
- * @param {{ email: string, password: string }} credentials
- * @returns {Promise<Object>} Dados do usuário e token
+ * Faz login
+ * @param {{email: string, password: string}} credentials
+ * @returns {Promise<object>}
  */
 export const login = async ({ email, password }) => {
   try {
     const response = await api.post("/login", { email, password });
     return response.data;
   } catch (error) {
-    const msg = error.response?.data?.error || error.message;
+    const msg = error?.response?.data?.error || error.message;
     console.error("Erro no login:", msg);
     throw new Error(msg);
   }
@@ -122,15 +126,15 @@ export const login = async ({ email, password }) => {
 
 /**
  * Cadastra novo usuário
- * @param {{ name: string, email: string, password: string }} userInfo
- * @returns {Promise<Object>} Dados do usuário criado
+ * @param {{name: string, email: string, password: string}} dados
+ * @returns {Promise<object>}
  */
 export const cadastrar = async ({ name, email, password }) => {
   try {
     const response = await api.post("/cadastro", { name, email, password });
     return response.data;
   } catch (error) {
-    const msg = error.response?.data?.error || error.message;
+    const msg = error?.response?.data?.error || error.message;
     console.error("Erro no cadastro:", msg);
     throw new Error(msg);
   }

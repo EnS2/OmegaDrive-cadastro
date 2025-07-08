@@ -1,7 +1,7 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// IP do backend - use o IP correto da sua máquina
+// IP do backend - ajuste conforme sua rede
 const BASE_URL = "http://10.10.20.117:4000";
 
 const api = axios.create({
@@ -13,42 +13,59 @@ const api = axios.create({
   timeout: 10000,
 });
 
-// Interceptor para incluir token JWT em todas as requisições
+// Interceptor: inclui JWT e identificação da plataforma
 api.interceptors.request.use(
   async (config) => {
     const token = await AsyncStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    config.headers["x-plataforma"] = "mobile";
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Função para formatar data para yyyy-mm-dd (backend espera neste formato)
+/**
+ * Formata uma data no padrão yyyy-mm-dd
+ * @param {string|Date} data
+ * @returns {string}
+ */
 const formatarDataParaBackend = (data) => {
   const d = new Date(data);
+  if (isNaN(d.getTime())) {
+    throw new Error("Data inválida");
+  }
   const ano = d.getFullYear();
   const mes = String(d.getMonth() + 1).padStart(2, "0");
   const dia = String(d.getDate()).padStart(2, "0");
   return `${ano}-${mes}-${dia}`;
 };
 
-// Mapeia os campos do frontend para o backend
+/**
+ * Prepara payload para envio ao backend
+ * @param {object} dados
+ * @returns {object}
+ */
 const adaptarPayloadParaBackend = (dados) => ({
-  rgCondutor: dados.rgCondutor,
+  rgCondutor: dados.rgCondutor || "",
   dataMarcada: formatarDataParaBackend(dados.dataMarcada),
   horaInicio: dados.horaInicio || null,
   horaSaida: dados.horaSaida || null,
   destino: dados.destino || null,
   kmIda: isNaN(Number(dados.kmIda)) ? 0 : Number(dados.kmIda),
   kmVolta: isNaN(Number(dados.kmVolta)) ? 0 : Number(dados.kmVolta),
-  observacoes: dados.observacoes || null,
-  veiculo: dados.veiculo,
-  placa: dados.placa,
+  observacao: dados.observacao || null,
+  veiculo: dados.veiculo || "",
+  placa: dados.placa || "",
 });
 
-// Criar ou atualizar registro
+/**
+ * Cria ou atualiza um registro
+ * @param {string|null} id - ID do registro (ou null para criar)
+ * @param {object} dados - Dados do formulário
+ * @returns {Promise<object>}
+ */
 export const salvarRegistro = async (id, dados) => {
   try {
     const payload = adaptarPayloadParaBackend(dados);
@@ -57,51 +74,74 @@ export const salvarRegistro = async (id, dados) => {
       : await api.post("/registrar", payload);
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.error || error.message);
+    const msg = error?.response?.data?.error || error.message;
+    console.error("Erro ao salvar registro:", msg);
+    throw new Error(msg);
   }
 };
 
-// Buscar registros de um dia
+/**
+ * Busca registros de um dia
+ * @param {string|Date} data
+ * @returns {Promise<object[]>}
+ */
 export const buscarRegistrosDoDia = async (data) => {
   try {
     const dataFormatada = formatarDataParaBackend(data);
     const response = await api.get(`/registrar?data=${dataFormatada}`);
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.error || error.message);
+    const msg = error?.response?.data?.error || error.message;
+    console.error("Erro ao buscar registros:", msg);
+    throw new Error(msg);
   }
 };
 
-// Deletar registro por ID
+/**
+ * Deleta um registro por ID
+ * @param {string} id
+ * @returns {Promise<void>}
+ */
 export const deletarRegistro = async (id) => {
   try {
     await api.delete(`/registrar/${id}`);
   } catch (error) {
-    throw new Error(error.response?.data?.error || error.message);
+    const msg = error?.response?.data?.error || error.message;
+    console.error("Erro ao deletar registro:", msg);
+    throw new Error(msg);
   }
 };
 
-// Login - recebe email e password separados
+/**
+ * Realiza login do usuário
+ * @param {string} email
+ * @param {string} password
+ * @returns {Promise<object>}
+ */
 export const login = async (email, password) => {
   try {
     const response = await api.post("/login", { email, password });
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.error || error.message);
+    const msg = error?.response?.data?.error || error.message;
+    console.error("Erro no login:", msg);
+    throw new Error(msg);
   }
 };
 
-// Cadastro - recebe objeto com nome, email e senha
-export const cadastrar = async ({ nome, email, senha }) => {
+/**
+ * Cadastra um novo usuário
+ * @param {{ name: string, email: string, password: string }} dados
+ * @returns {Promise<object>}
+ */
+export const cadastrar = async ({ name, email, password }) => {
   try {
-    const response = await api.post("/cadastro", {
-      name: nome,
-      email,
-      password: senha,
-    });
+    const response = await api.post("/cadastro", { name, email, password });
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.error || error.message);
+    const msg = error?.response?.data?.error || error.message;
+    console.error("Erro no cadastro:", msg);
+    throw new Error(msg);
   }
 };
 

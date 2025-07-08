@@ -14,8 +14,14 @@ import {
   deletarRegistro,
 } from "@/services/api";
 
+const criarDataLocal = (dataString) => {
+  if (!dataString) return null;
+  const [ano, mes, dia] = dataString.split("-");
+  return new Date(ano, mes - 1, dia);
+};
+
 const formatarDataBR = (data) =>
-  data ? new Date(data).toLocaleDateString("pt-BR") : "Data inválida";
+  data ? data.toLocaleDateString("pt-BR") : "Data inválida";
 
 const formatarDataExtensa = (data) =>
   data
@@ -26,7 +32,11 @@ const formatarDataExtensa = (data) =>
     })
     .toLowerCase();
 
-const getKm = (a, b) => (a != null ? a : b != null ? b : 0);
+const getKm = (a, b) => {
+  const valor = a ?? b;
+  const num = parseFloat(valor);
+  return isNaN(num) ? 0 : num;
+};
 
 const Dashboard = () => {
   const [selectedDate, setSelectedDate] = useState(() => {
@@ -66,7 +76,7 @@ const Dashboard = () => {
 
         const registrosConvertidos = resposta.map((r) => ({
           ...r,
-          data: new Date(r.dataMarcada || r.data || selectedDate),
+          data: criarDataLocal(r.dataMarcada || r.data || dataFormatada),
         }));
         setRegistros(registrosConvertidos);
       } catch (error) {
@@ -81,8 +91,8 @@ const Dashboard = () => {
   useEffect(() => {
     setTotalViagens(registros.length);
     const somaKm = registros.reduce((total, r) => {
-      const inicio = parseFloat(r.kmIda ?? r.kmInicial ?? 0);
-      const fim = parseFloat(r.kmVolta ?? r.kmFinal ?? 0);
+      const inicio = getKm(r.kmIda, r.kmInicial);
+      const fim = getKm(r.kmVolta, r.kmFinal);
       const diferenca = fim - inicio;
       return total + (isNaN(diferenca) ? 0 : diferenca);
     }, 0);
@@ -110,21 +120,16 @@ const Dashboard = () => {
 
     try {
       let salvo;
-      if (registroEditando) {
-        salvo = await salvarRegistro(registro.id, {
-          ...registro,
-          dataMarcada: selectedDate.toISOString().split("T")[0],
-        });
-      } else {
-        salvo = await salvarRegistro(null, {
-          ...registro,
-          dataMarcada: selectedDate.toISOString().split("T")[0],
-        });
-      }
+      const dados = {
+        ...registro,
+        dataMarcada: selectedDate.toISOString().split("T")[0],
+      };
+
+      salvo = await salvarRegistro(registroEditando?.id ?? null, dados);
 
       const novoRegistro = {
         ...salvo,
-        data: new Date(salvo.dataMarcada || salvo.data),
+        data: criarDataLocal(salvo.dataMarcada || salvo.data),
       };
 
       if (registroEditando) {
@@ -146,9 +151,7 @@ const Dashboard = () => {
   };
 
   const handleExcluirRegistro = async (id) => {
-    const confirmar = window.confirm("Deseja excluir este registro?");
-    if (!confirmar) return;
-
+    if (!window.confirm("Deseja excluir este registro?")) return;
     try {
       await deletarRegistro(id);
       setRegistros((prev) => prev.filter((r) => r.id !== id));
@@ -259,10 +262,8 @@ const RegistroCard = ({ registro, onEditar, onExcluir }) => (
     <div className="registro-body">
       <div className="dados-condutor">
         <small>🧑 {registro.condutor || "Condutor não informado"}</small>
-        <small>🆔 RG: {registro.rg || "Não informado"}</small>
-
+        <small>🆔 RG: {registro.rgCondutor || "Não informado"}</small>
         {registro.editadoPor && <small>✏️ {registro.editadoPor}</small>}
-
         {registro.destino && (
           <p>
             <strong>Destino:</strong> {registro.destino}
@@ -291,6 +292,7 @@ const RegistroCard = ({ registro, onEditar, onExcluir }) => (
         </div>
       </div>
     </div>
+
     <div className="registro-actions">
       <button onClick={onEditar}>Editar</button>
       <button onClick={onExcluir}>Excluir</button>

@@ -7,7 +7,13 @@ import {
     TouchableOpacity,
     ScrollView,
     StyleSheet,
+    Platform,
 } from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
+
+const formatarDataISO = (data) => {
+    return `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, "0")}-${String(data.getDate()).padStart(2, "0")}`;
+};
 
 const ModalRegistro = ({
     visible,
@@ -31,6 +37,8 @@ const ModalRegistro = ({
         observacao: "",
     });
 
+    const [mostrarDataPicker, setMostrarDataPicker] = useState(false);
+
     useEffect(() => {
         if (registro) {
             setDados({
@@ -41,7 +49,7 @@ const ModalRegistro = ({
         } else {
             setDados((prev) => ({
                 ...prev,
-                dataMarcada: dataSelecionada?.toISOString()?.split("T")[0],
+                dataMarcada: formatarDataISO(dataSelecionada),
             }));
         }
     }, [registro, dataSelecionada]);
@@ -162,6 +170,36 @@ const ModalRegistro = ({
                                 onChangeText={(v) => handleChange("horaInicio", v)}
                             />
                         </View>
+
+                        {/* Seletor de Data */}
+                        <TouchableOpacity
+                            style={styles.input}
+                            onPress={() => setMostrarDataPicker(true)}
+                        >
+                            <Text style={{ color: dados.dataMarcada ? "#000" : "#888" }}>
+                                {dados.dataMarcada
+                                    ? new Date(dados.dataMarcada).toLocaleDateString()
+                                    : "Selecione a data"}
+                            </Text>
+                        </TouchableOpacity>
+
+                        {mostrarDataPicker && (
+                            <DateTimePicker
+                                value={
+                                    dados.dataMarcada
+                                        ? new Date(dados.dataMarcada)
+                                        : new Date()
+                                }
+                                mode="date"
+                                display={Platform.OS === "ios" ? "spinner" : "default"}
+                                onChange={(event, selectedDate) => {
+                                    if (Platform.OS !== "ios") setMostrarDataPicker(false);
+                                    if (selectedDate) {
+                                        handleChange("dataMarcada", formatarDataISO(selectedDate));
+                                    }
+                                }}
+                            />
+                        )}
 
                         <TextInput
                             style={styles.input}

@@ -16,6 +16,7 @@
     "axios": "^1.9.0",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
+    "dayjs": "^1.11.13",
     "expo": "^53.0.12",
     "motion": "^12.12.1",
     "prop-types": "^15.8.1",
@@ -43,8 +44,8 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
+    "typescript": "~5.8.3",
     "vite": "^6.3.1",
-    "vite-plugin-qrcode": "^0.2.4",
-    "typescript": "~5.8.3"
+    "vite-plugin-qrcode": "^0.2.4"
   }
 }
