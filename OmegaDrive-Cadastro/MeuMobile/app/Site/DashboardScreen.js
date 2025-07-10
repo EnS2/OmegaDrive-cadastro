@@ -57,12 +57,8 @@ const DashboardScreen = () => {
       const resposta = await buscarRegistrosDoDia(dataStr);
 
       const convertidos = resposta.map((r) => {
-        const original = r.dataMarcada || r.data || selectedDate;
-        // Corrige para criar data local sem UTC shift
-        const partes = new Date(original)
-          .toISOString()
-          .split("T")[0]
-          .split("-");
+        const iso = r.dataISO || r.dataMarcada || r.data; // Ex: "2025-07-10"
+        const partes = iso.split("-");
         const dataCorrigida = new Date(
           Number(partes[0]),
           Number(partes[1]) - 1,
@@ -88,12 +84,16 @@ const DashboardScreen = () => {
 
   const handleSalvar = async (registro) => {
     try {
+      const dataMarcada = formatarDataSelecionada(selectedDate);
+      const payload = { ...registro, dataMarcada };
+
       let salvo;
       if (registroEditando) {
-        salvo = await salvarRegistro(registro.id, registro);
+        salvo = await salvarRegistro(registro.id, payload);
       } else {
-        salvo = await salvarRegistro(null, registro);
+        salvo = await salvarRegistro(null, payload);
       }
+
       setMostrarModal(false);
       setRegistroEditando(null);
       carregarRegistros();

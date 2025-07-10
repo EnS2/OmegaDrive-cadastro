@@ -45,6 +45,8 @@ const ModalRegistro = ({
                 ...registro,
                 kmIda: registro.kmIda?.toString() ?? "",
                 kmVolta: registro.kmVolta?.toString() ?? "",
+                dataMarcada:
+                    registro.dataMarcada || formatarDataISO(dataSelecionada),
             });
         } else {
             setDados((prev) => ({
@@ -80,11 +82,14 @@ const ModalRegistro = ({
             return;
         }
 
-        onSalvar({
+        const dadosFormatados = {
             ...dados,
             kmIda: parseFloat(dados.kmIda),
             kmVolta: parseFloat(dados.kmVolta),
-        });
+            dataMarcada: dados.dataMarcada || formatarDataISO(dataSelecionada),
+        };
+
+        onSalvar(dadosFormatados);
     };
 
     return (
@@ -195,7 +200,10 @@ const ModalRegistro = ({
                                 onChange={(event, selectedDate) => {
                                     if (Platform.OS !== "ios") setMostrarDataPicker(false);
                                     if (selectedDate) {
-                                        handleChange("dataMarcada", formatarDataISO(selectedDate));
+                                        handleChange(
+                                            "dataMarcada",
+                                            formatarDataISO(selectedDate)
+                                        );
                                     }
                                 }}
                             />
