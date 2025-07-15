@@ -1,3 +1,4 @@
+// Dashboard.jsx
 import { useEffect, useState } from "react";
 import { Car, Plus } from "lucide-react";
 import Calendar from "react-calendar";
@@ -8,17 +9,12 @@ import "@/components/ResumoDia.css";
 import "@/components/ModalRegistro.css";
 import { toast } from "sonner";
 import ModalRegistro from "@/components/ModalRegistro";
+import RegistroCard from "@/components/RegistroCard";
 import {
   salvarRegistro,
   buscarRegistrosDoDia,
   deletarRegistro,
 } from "@/services/api";
-
-const criarDataLocal = (dataString) => {
-  if (!dataString) return null;
-  const [ano, mes, dia] = dataString.split("-");
-  return new Date(ano, mes - 1, dia);
-};
 
 const formatarDataBR = (data) =>
   data ? data.toLocaleDateString("pt-BR") : "Data inválida";
@@ -31,6 +27,9 @@ const formatarDataExtensa = (data) =>
       month: "long",
     })
     .toLowerCase();
+
+const formatarDataYYYYMMDD = (date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 
 const getKm = (a, b) => {
   const valor = a ?? b;
@@ -66,18 +65,14 @@ const Dashboard = () => {
   useEffect(() => {
     const carregarRegistros = async () => {
       try {
-        if (!selectedDate || isNaN(selectedDate.getTime())) {
-          toast.error("Data inválida selecionada.");
-          return;
-        }
-
-        const dataFormatada = selectedDate.toISOString().split("T")[0];
+        const dataFormatada = formatarDataYYYYMMDD(selectedDate);
         const resposta = await buscarRegistrosDoDia(dataFormatada);
 
         const registrosConvertidos = resposta.map((r) => ({
           ...r,
-          data: criarDataLocal(r.dataMarcada || r.data || dataFormatada),
+          data: r.dataMarcada ? new Date(r.dataMarcada) : null,
         }));
+
         setRegistros(registrosConvertidos);
       } catch (error) {
         console.error(error);
@@ -85,6 +80,7 @@ const Dashboard = () => {
         setRegistros([]);
       }
     };
+
     carregarRegistros();
   }, [selectedDate]);
 
@@ -105,61 +101,38 @@ const Dashboard = () => {
     setSelectedDate(d);
   };
 
-  const validarRegistro = (registro) => {
-    const { veiculo, condutor, rgCondutor, kmIda, kmVolta, horaSaida } =
-      registro;
-    if (!veiculo || !condutor || !rgCondutor || !kmIda || !kmVolta || !horaSaida) {
-      toast.error("Preencha todos os campos obrigatórios.");
-      return false;
-    }
-    return true;
-  };
-
   const handleSalvarRegistro = async (registro) => {
-    if (!validarRegistro(registro)) return;
+    const dados = {
+      ...registro,
+      dataMarcada: formatarDataYYYYMMDD(selectedDate),
+    };
 
-    try {
-      let salvo;
-      const dados = {
-        ...registro,
-        dataMarcada: selectedDate.toISOString().split("T")[0],
-      };
+    const salvo = await salvarRegistro(registroEditando?.id ?? null, dados);
 
-      salvo = await salvarRegistro(registroEditando?.id ?? null, dados);
+    const novoRegistro = {
+      ...salvo,
+      data: salvo.dataMarcada ? new Date(salvo.dataMarcada) : null,
+    };
 
-      const novoRegistro = {
-        ...salvo,
-        data: criarDataLocal(salvo.dataMarcada || salvo.data),
-      };
-
-      if (registroEditando) {
-        setRegistros((prev) =>
-          prev.map((r) => (r.id === novoRegistro.id ? novoRegistro : r))
-        );
-        toast.success("Registro atualizado.");
-      } else {
-        setRegistros((prev) => [...prev, novoRegistro]);
-        toast.success("Registro adicionado.");
-      }
-
-      setMostrarModal(false);
-      setRegistroEditando(null);
-    } catch (error) {
-      console.error(error);
-      toast.error("Erro ao salvar o registro.");
+    if (registroEditando) {
+      setRegistros((prev) =>
+        prev.map((r) => (r.id === novoRegistro.id ? novoRegistro : r))
+      );
+      toast.success("Registro atualizado.");
+    } else {
+      setRegistros((prev) => [...prev, novoRegistro]);
+      toast.success("Registro adicionado.");
     }
+
+    setMostrarModal(false);
+    setRegistroEditando(null);
   };
 
   const handleExcluirRegistro = async (id) => {
     if (!window.confirm("Deseja excluir este registro?")) return;
-    try {
-      await deletarRegistro(id);
-      setRegistros((prev) => prev.filter((r) => r.id !== id));
-      toast.success("Registro excluído.");
-    } catch (error) {
-      console.error(error);
-      toast.error("Erro ao excluir o registro.");
-    }
+    await deletarRegistro(id);
+    setRegistros((prev) => prev.filter((r) => r.id !== id));
+    toast.success("Registro excluído.");
   };
 
   return (
@@ -249,54 +222,6 @@ const ResumoItem = ({ label, valor }) => (
   <div className="resumo-card">
     <div className="resumo-label">{label}</div>
     <div className="resumo-valor">{valor}</div>
-  </div>
-);
-
-const RegistroCard = ({ registro, onEditar, onExcluir }) => (
-  <div className="registro-card">
-    <div className="registro-header">
-      <span>🚗 {registro.veiculo || "Veículo não informado"}</span>
-      <span>📅 {formatarDataBR(registro.data)}</span>
-    </div>
-
-    <div className="registro-body">
-      <div className="dados-condutor">
-        <small>🧑 {registro.condutor || "Condutor não informado"}</small>
-        <small>🆔 RG: {registro.rgCondutor || "Não informado"}</small>
-        {registro.editadoPor && <small>✏️ {registro.editadoPor}</small>}
-        {registro.destino && (
-          <p>
-            <strong>Destino:</strong> {registro.destino}
-          </p>
-        )}
-        {(registro.horaSaida || registro.horaInicio) && (
-          <p>
-            <strong>Horário:</strong> {registro.horaSaida || "--"} →{" "}
-            {registro.horaInicio || "--"}
-          </p>
-        )}
-        {registro.observacoes && (
-          <p>
-            <strong>Observações:</strong> {registro.observacoes}
-          </p>
-        )}
-      </div>
-      <div className="dados-km">
-        <div>
-          <strong>Inicial</strong>
-          <p>{getKm(registro.kmIda, registro.kmInicial)} km</p>
-        </div>
-        <div>
-          <strong>Final</strong>
-          <p>{getKm(registro.kmVolta, registro.kmFinal)} km</p>
-        </div>
-      </div>
-    </div>
-
-    <div className="registro-actions">
-      <button onClick={onEditar}>Editar</button>
-      <button onClick={onExcluir}>Excluir</button>
-    </div>
   </div>
 );
 

@@ -1,8 +1,16 @@
+// RegistroCard.jsx
+import React from "react";
+
 const RegistroCard = ({ registro, onEditar, onExcluir }) => {
-    const dataValida =
-        registro.data instanceof Date && !isNaN(registro.data)
-            ? registro.data.toLocaleDateString("pt-BR")
-            : "Data inválida";
+    let dataValida = "Data inválida";
+    try {
+        const data = new Date(registro.data);
+        if (!isNaN(data.getTime())) {
+            dataValida = data.toLocaleDateString("pt-BR");
+        }
+    } catch {
+        dataValida = "Data inválida";
+    }
 
     const kmInicial = parseFloat(registro.kmInicial ?? registro.kmIda ?? 0);
     const kmFinal = parseFloat(registro.kmFinal ?? registro.kmVolta ?? 0);
@@ -21,25 +29,29 @@ const RegistroCard = ({ registro, onEditar, onExcluir }) => {
                         <strong>Condutor:</strong> {registro.condutor || "Desconhecido"}
                     </p>
                     <p>
-                        <strong>RG:</strong> {registro.rgCondutor || registro.rg || "N/A"}
+                        <strong>RG:</strong>{" "}
+                        {registro.rgCondutor || registro.rg || "Não informado"}
                     </p>
-
                     {registro.destino && (
                         <p>
                             <strong>Destino:</strong> {registro.destino}
                         </p>
                     )}
-
-                    {(registro.horaSaida || registro.horaRetorno) && (
+                    {(registro.horaSaida || registro.horaRetorno || registro.horaInicio) && (
                         <p>
                             <strong>Horário:</strong>{" "}
-                            {registro.horaSaida || "--"} → {registro.horaRetorno || "--"}
+                            {registro.horaSaida || registro.horaInicio || "--"} →{" "}
+                            {registro.horaRetorno || "--"}
                         </p>
                     )}
-
                     {registro.observacao && (
                         <p>
                             <strong>Observações:</strong> {registro.observacao}
+                        </p>
+                    )}
+                    {registro.editadoPor && (
+                        <p>
+                            <strong>Editado por:</strong> {registro.editadoPor}
                         </p>
                     )}
                 </div>
@@ -59,7 +71,7 @@ const RegistroCard = ({ registro, onEditar, onExcluir }) => {
                     </div>
                 </div>
 
-                <div className="botoes">
+                <div className="registro-actions">
                     <button className="editar" onClick={() => onEditar(registro)}>
                         Editar
                     </button>
