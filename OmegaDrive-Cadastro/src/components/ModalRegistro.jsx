@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
-// Corrigido: usa data local, não UTC
 const parseDate = (dateValue) => {
   if (!dateValue) return "";
   const d = new Date(dateValue);
@@ -90,11 +89,15 @@ const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
     e.preventDefault();
     if (!validar()) return;
 
+    // 🔧 Correção da data com hora 12:00
+    const [ano, mes, dia] = formData.data.split("-");
+    const dataMarcada = new Date(ano, mes - 1, dia, 12, 0, 0); // Define hora local 12:00
+
     const payload = {
       id: registro?.id || null,
       condutor: formData.condutor,
       rgCondutor: formData.rg,
-      dataMarcada: formData.data, // já está no formato local YYYY-MM-DD
+      dataMarcada: dataMarcada.toISOString(), // ✅ Corrigido para evitar erro de fuso
       horaInicio: formData.horaInicio,
       horaSaida: formData.horaSaida,
       destino: formData.destino,
@@ -210,8 +213,12 @@ const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
           </div>
 
           <div className="form-actions">
-            <button type="button" className="btn-cinza" onClick={onClose}>Cancelar</button>
-            <button type="submit" className="btn-roxo">Salvar</button>
+            <button type="button" className="btn-cinza" onClick={onClose}>
+              Cancelar
+            </button>
+            <button type="submit" className="btn-roxo">
+              Salvar
+            </button>
           </div>
         </form>
       </div>

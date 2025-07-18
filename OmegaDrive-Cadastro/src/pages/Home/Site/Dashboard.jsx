@@ -15,7 +15,6 @@ import {
   deletarRegistro,
 } from "@/services/api";
 
-// Formatadores
 const formatarDataBR = (data) =>
   data ? data.toLocaleDateString("pt-BR") : "Data inválida";
 
@@ -40,7 +39,7 @@ const formatarDataYYYYMMDD = (date) => {
 const parseDataLocal = (dataISO) => {
   if (!dataISO) return null;
   const [ano, mes, dia] = dataISO.split("-");
-  return new Date(Number(ano), Number(mes) - 1, Number(dia), 12, 0, 0, 0);
+  return new Date(Number(ano), Number(mes) - 1, Number(dia));
 };
 
 const getKm = (a, b) => {
@@ -71,9 +70,7 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    const d = new Date(selectedDate);
-    d.setHours(12, 0, 0, 0);
-    localStorage.setItem("selectedDate", d.toISOString());
+    localStorage.setItem("selectedDate", selectedDate.toISOString());
   }, [selectedDate]);
 
   useEffect(() => {
@@ -84,10 +81,14 @@ const Dashboard = () => {
 
         const registrosConvertidos = resposta.map((r) => ({
           ...r,
-          dataMarcada: r.dataISO
-            ? parseDataLocal(r.dataISO)
-            : new Date(new Date(r.dataMarcada).setHours(12, 0, 0, 0)),
+          dataMarcada: parseDataLocal(r.dataISO ?? r.dataMarcada),
         }));
+
+        registrosConvertidos.sort((a, b) => {
+          const ha = a.horaSaida ?? a.horaInicio ?? "";
+          const hb = b.horaSaida ?? b.horaInicio ?? "";
+          return ha.localeCompare(hb);
+        });
 
         setRegistros(registrosConvertidos);
       } catch (error) {
@@ -129,9 +130,7 @@ const Dashboard = () => {
 
       const novoRegistro = {
         ...salvo,
-        dataMarcada: salvo.dataISO
-          ? parseDataLocal(salvo.dataISO)
-          : new Date(new Date(salvo.dataMarcada).setHours(12, 0, 0, 0)),
+        dataMarcada: parseDataLocal(salvo.dataISO ?? salvo.dataMarcada),
       };
 
       if (registroEditando) {

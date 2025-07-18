@@ -1,12 +1,19 @@
 import React from "react";
 
 const RegistroCard = ({ registro, onEditar, onExcluir }) => {
-    // Função para converter data UTC para local
     const converterParaDataLocal = (dataUTCString) => {
-        const dataUTC = new Date(dataUTCString);
-        if (isNaN(dataUTC.getTime())) return "Data inválida";
-        const dataLocal = new Date(dataUTC.getTime() + dataUTC.getTimezoneOffset() * 60000);
-        return dataLocal.toLocaleDateString("pt-BR");
+        try {
+            const originalDate = new Date(dataUTCString);
+            if (isNaN(originalDate.getTime())) return "Data inválida";
+
+            // Corrige o horário para 12h (meio-dia) para evitar fuso negativo
+            const ajustada = new Date(originalDate);
+            ajustada.setHours(12, 0, 0, 0);
+
+            return ajustada.toLocaleDateString("pt-BR");
+        } catch {
+            return "Data inválida";
+        }
     };
 
     const dataValida = converterParaDataLocal(registro.dataMarcada);
