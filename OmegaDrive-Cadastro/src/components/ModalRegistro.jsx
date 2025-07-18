@@ -1,10 +1,15 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
+// Corrigido: usa data local, não UTC
 const parseDate = (dateValue) => {
   if (!dateValue) return "";
   const d = new Date(dateValue);
-  return isNaN(d) ? "" : d.toISOString().split("T")[0];
+  if (isNaN(d)) return "";
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 };
 
 const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
@@ -89,7 +94,7 @@ const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
       id: registro?.id || null,
       condutor: formData.condutor,
       rgCondutor: formData.rg,
-      dataMarcada: formData.data,
+      dataMarcada: formData.data, // já está no formato local YYYY-MM-DD
       horaInicio: formData.horaInicio,
       horaSaida: formData.horaSaida,
       destino: formData.destino,
@@ -215,3 +220,4 @@ const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
 };
 
 export default ModalRegistro;
+

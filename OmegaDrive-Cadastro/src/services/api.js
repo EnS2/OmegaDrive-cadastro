@@ -26,15 +26,25 @@ api.interceptors.request.use(
 );
 
 /**
- * Formata uma data em YYYY-MM-DD
+ * Formata uma data em YYYY-MM-DD respeitando o fuso horário America/Sao_Paulo
  * @param {string|Date} dateValue
  * @returns {string}
  */
 const formatarDataParaBackend = (dateValue) => {
-  const date = new Date(dateValue);
-  const ano = date.getFullYear();
-  const mes = String(date.getMonth() + 1).padStart(2, "0");
-  const dia = String(date.getDate()).padStart(2, "0");
+  if (!dateValue) return "";
+
+  const formatter = new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+
+  const parts = formatter.formatToParts(new Date(dateValue));
+  const ano = parts.find((p) => p.type === "year")?.value;
+  const mes = parts.find((p) => p.type === "month")?.value;
+  const dia = parts.find((p) => p.type === "day")?.value;
+
   return `${ano}-${mes}-${dia}`;
 };
 
@@ -58,16 +68,17 @@ const adaptarPayloadParaBackend = (dados) => ({
 
 /**
  * Salva ou atualiza um registro
- * @param {object} registro - O registro (pode conter id)
+ * @param {object|null} registro - Objeto registro com id, ou null para criar novo
  * @param {object} dados - Dados do formulário
  * @returns {Promise<object>}
  */
 export const salvarRegistro = async (registro, dados) => {
   try {
     const payload = adaptarPayloadParaBackend(dados);
-    const response = registro?.id
-      ? await api.put(`/registrar/${registro.id}`, payload)
-      : await api.post("/registrar", payload);
+    const response =
+      registro && registro.id
+        ? await api.put(`/registrar/${registro.id}`, payload)
+        : await api.post("/registrar", payload);
     return response.data;
   } catch (error) {
     const msg = error?.response?.data?.error || error.message;

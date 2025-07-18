@@ -28,17 +28,31 @@ const formatarData = (date) =>
     month: "long",
   });
 
-// Formata para yyyy-MM-dd
-const formatarDataSelecionada = (date) =>
-  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+// Formata para yyyy-MM-dd fixando hora em 12h para evitar problemas de fuso horário
+const formatarDataSelecionada = (date) => {
+  if (!date) return "";
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
     2,
     "0"
   )}-${String(date.getDate()).padStart(2, "0")}`;
+};
+
+// Corrige o parse da data e fixa hora em 12h para evitar fuso horário
+const parseDataComHoraMeioDia = (iso) => {
+  if (!iso) return null;
+  const partes = iso.split("-");
+  return new Date(
+    Number(partes[0]),
+    Number(partes[1]) - 1,
+    Number(partes[2]),
+    12
+  );
+};
 
 const DashboardScreen = () => {
   const [selectedDate, setSelectedDate] = useState(() => {
     const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
+    hoje.setHours(12, 0, 0, 0);
     return hoje;
   });
 
@@ -57,13 +71,8 @@ const DashboardScreen = () => {
       const resposta = await buscarRegistrosDoDia(dataStr);
 
       const convertidos = resposta.map((r) => {
-        const iso = r.dataISO || r.dataMarcada || r.data; // Ex: "2025-07-10"
-        const partes = iso.split("-");
-        const dataCorrigida = new Date(
-          Number(partes[0]),
-          Number(partes[1]) - 1,
-          Number(partes[2])
-        );
+        const iso = r.dataISO || r.dataMarcada || r.data; // ex: "2025-07-10"
+        const dataCorrigida = parseDataComHoraMeioDia(iso);
         return { ...r, data: dataCorrigida };
       });
 
@@ -89,7 +98,7 @@ const DashboardScreen = () => {
 
       let salvo;
       if (registroEditando) {
-        salvo = await salvarRegistro(registro.id, payload);
+        salvo = await salvarRegistro(registroEditando, payload);
       } else {
         salvo = await salvarRegistro(null, payload);
       }
@@ -138,7 +147,7 @@ const DashboardScreen = () => {
               const [year, month, dayNum] = day.dateString
                 .split("-")
                 .map(Number);
-              const d = new Date(year, month - 1, dayNum);
+              const d = new Date(year, month - 1, dayNum, 12, 0, 0, 0);
               setSelectedDate(d);
             }}
             markedDates={{
@@ -184,11 +193,11 @@ const DashboardScreen = () => {
               <RegistroCard
                 key={r.id}
                 registro={r}
-                onEditar={(reg) => {
-                  setRegistroEditando(reg);
+                onEditar={() => {
+                  setRegistroEditando(r);
                   setMostrarModal(true);
                 }}
-                onExcluir={handleExcluir}
+                onExcluir={() => handleExcluir(r.id)}
               />
             ))
           )}

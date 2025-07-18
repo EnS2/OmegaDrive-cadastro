@@ -1,20 +1,28 @@
-// RegistroCard.jsx
 import React from "react";
 
 const RegistroCard = ({ registro, onEditar, onExcluir }) => {
-    let dataValida = "Data inválida";
-    try {
-        const data = new Date(registro.data);
-        if (!isNaN(data.getTime())) {
-            dataValida = data.toLocaleDateString("pt-BR");
-        }
-    } catch {
-        dataValida = "Data inválida";
-    }
+    // Função para converter data UTC para local
+    const converterParaDataLocal = (dataUTCString) => {
+        const dataUTC = new Date(dataUTCString);
+        if (isNaN(dataUTC.getTime())) return "Data inválida";
+        const dataLocal = new Date(dataUTC.getTime() + dataUTC.getTimezoneOffset() * 60000);
+        return dataLocal.toLocaleDateString("pt-BR");
+    };
+
+    const dataValida = converterParaDataLocal(registro.dataMarcada);
 
     const kmInicial = parseFloat(registro.kmInicial ?? registro.kmIda ?? 0);
     const kmFinal = parseFloat(registro.kmFinal ?? registro.kmVolta ?? 0);
-    const kmTotal = !isNaN(kmFinal - kmInicial) ? kmFinal - kmInicial : "--";
+    const kmTotal =
+        !isNaN(kmInicial) && !isNaN(kmFinal) ? kmFinal - kmInicial : null;
+
+    const formatarKm = (valor) =>
+        typeof valor === "number" && !isNaN(valor) ? `${valor} km` : "--";
+
+    const horarios =
+        registro.horaSaida || registro.horaRetorno || registro.horaInicio
+            ? `${registro.horaSaida ?? registro.horaInicio ?? "--"} → ${registro.horaRetorno ?? "--"}`
+            : null;
 
     return (
         <div className="registro-card">
@@ -29,19 +37,16 @@ const RegistroCard = ({ registro, onEditar, onExcluir }) => {
                         <strong>Condutor:</strong> {registro.condutor || "Desconhecido"}
                     </p>
                     <p>
-                        <strong>RG:</strong>{" "}
-                        {registro.rgCondutor || registro.rg || "Não informado"}
+                        <strong>RG:</strong> {registro.rgCondutor ?? registro.rg ?? "Não informado"}
                     </p>
                     {registro.destino && (
                         <p>
                             <strong>Destino:</strong> {registro.destino}
                         </p>
                     )}
-                    {(registro.horaSaida || registro.horaRetorno || registro.horaInicio) && (
+                    {horarios && (
                         <p>
-                            <strong>Horário:</strong>{" "}
-                            {registro.horaSaida || registro.horaInicio || "--"} →{" "}
-                            {registro.horaRetorno || "--"}
+                            <strong>Horário:</strong> {horarios}
                         </p>
                     )}
                     {registro.observacao && (
@@ -59,15 +64,15 @@ const RegistroCard = ({ registro, onEditar, onExcluir }) => {
                 <div className="dados-km">
                     <div>
                         <strong>Inicial</strong>
-                        <p>{isNaN(kmInicial) ? "--" : `${kmInicial} km`}</p>
+                        <p>{formatarKm(kmInicial)}</p>
                     </div>
                     <div>
                         <strong>Final</strong>
-                        <p>{isNaN(kmFinal) ? "--" : `${kmFinal} km`}</p>
+                        <p>{formatarKm(kmFinal)}</p>
                     </div>
                     <div>
                         <strong>Total</strong>
-                        <p>{isNaN(kmTotal) ? "--" : `${kmTotal} km`}</p>
+                        <p>{kmTotal !== null ? formatarKm(kmTotal) : "--"}</p>
                     </div>
                 </div>
 

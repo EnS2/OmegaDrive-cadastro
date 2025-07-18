@@ -1,4 +1,3 @@
-// Dashboard.jsx
 import { useEffect, useState } from "react";
 import { Car, Plus } from "lucide-react";
 import Calendar from "react-calendar";
@@ -16,20 +15,33 @@ import {
   deletarRegistro,
 } from "@/services/api";
 
+// Formatadores
 const formatarDataBR = (data) =>
   data ? data.toLocaleDateString("pt-BR") : "Data inválida";
 
 const formatarDataExtensa = (data) =>
   data
-    .toLocaleDateString("pt-BR", {
+    ? data.toLocaleDateString("pt-BR", {
       weekday: "long",
       day: "numeric",
       month: "long",
-    })
-    .toLowerCase();
+    }).toLowerCase()
+    : "";
 
-const formatarDataYYYYMMDD = (date) =>
-  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+const formatarDataYYYYMMDD = (date) => {
+  if (!date) return "";
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+};
+
+const parseDataLocal = (dataISO) => {
+  if (!dataISO) return null;
+  const [ano, mes, dia] = dataISO.split("-");
+  return new Date(Number(ano), Number(mes) - 1, Number(dia), 12, 0, 0, 0);
+};
 
 const getKm = (a, b) => {
   const valor = a ?? b;
@@ -41,7 +53,7 @@ const Dashboard = () => {
   const [selectedDate, setSelectedDate] = useState(() => {
     const salva = localStorage.getItem("selectedDate");
     const d = salva ? new Date(salva) : new Date();
-    d.setHours(0, 0, 0, 0);
+    d.setHours(12, 0, 0, 0);
     return d;
   });
 
@@ -59,7 +71,9 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("selectedDate", selectedDate.toISOString());
+    const d = new Date(selectedDate);
+    d.setHours(12, 0, 0, 0);
+    localStorage.setItem("selectedDate", d.toISOString());
   }, [selectedDate]);
 
   useEffect(() => {
@@ -70,7 +84,9 @@ const Dashboard = () => {
 
         const registrosConvertidos = resposta.map((r) => ({
           ...r,
-          data: r.dataMarcada ? new Date(r.dataMarcada) : null,
+          dataMarcada: r.dataISO
+            ? parseDataLocal(r.dataISO)
+            : new Date(new Date(r.dataMarcada).setHours(12, 0, 0, 0)),
         }));
 
         setRegistros(registrosConvertidos);
@@ -96,8 +112,9 @@ const Dashboard = () => {
   }, [registros]);
 
   const onDateChange = (date) => {
+    if (!date) return;
     const d = new Date(date);
-    d.setHours(0, 0, 0, 0);
+    d.setHours(12, 0, 0, 0);
     setSelectedDate(d);
   };
 
@@ -107,32 +124,44 @@ const Dashboard = () => {
       dataMarcada: formatarDataYYYYMMDD(selectedDate),
     };
 
-    const salvo = await salvarRegistro(registroEditando?.id ?? null, dados);
+    try {
+      const salvo = await salvarRegistro(registroEditando?.id ?? null, dados);
 
-    const novoRegistro = {
-      ...salvo,
-      data: salvo.dataMarcada ? new Date(salvo.dataMarcada) : null,
-    };
+      const novoRegistro = {
+        ...salvo,
+        dataMarcada: salvo.dataISO
+          ? parseDataLocal(salvo.dataISO)
+          : new Date(new Date(salvo.dataMarcada).setHours(12, 0, 0, 0)),
+      };
 
-    if (registroEditando) {
-      setRegistros((prev) =>
-        prev.map((r) => (r.id === novoRegistro.id ? novoRegistro : r))
-      );
-      toast.success("Registro atualizado.");
-    } else {
-      setRegistros((prev) => [...prev, novoRegistro]);
-      toast.success("Registro adicionado.");
+      if (registroEditando) {
+        setRegistros((prev) =>
+          prev.map((r) => (r.id === novoRegistro.id ? novoRegistro : r))
+        );
+        toast.success("Registro atualizado.");
+      } else {
+        setRegistros((prev) => [...prev, novoRegistro]);
+        toast.success("Registro adicionado.");
+      }
+
+      setMostrarModal(false);
+      setRegistroEditando(null);
+    } catch (error) {
+      console.error(error);
+      toast.error("Erro ao salvar registro.");
     }
-
-    setMostrarModal(false);
-    setRegistroEditando(null);
   };
 
   const handleExcluirRegistro = async (id) => {
     if (!window.confirm("Deseja excluir este registro?")) return;
-    await deletarRegistro(id);
-    setRegistros((prev) => prev.filter((r) => r.id !== id));
-    toast.success("Registro excluído.");
+    try {
+      await deletarRegistro(id);
+      setRegistros((prev) => prev.filter((r) => r.id !== id));
+      toast.success("Registro excluído.");
+    } catch (error) {
+      console.error(error);
+      toast.error("Erro ao excluir registro.");
+    }
   };
 
   return (
