@@ -11,6 +11,18 @@ const CalendarComponent = ({ selectedDate, onDateChange }) => {
     });
   };
 
+  // Ajusta a hora para 12:00 para evitar problemas com fuso horário
+  const ajustarDataParaMeioDia = (data) => {
+    const novaData = new Date(data);
+    novaData.setHours(12, 0, 0, 0);
+    return novaData;
+  };
+
+  const handleDateChange = (data) => {
+    const corrigida = ajustarDataParaMeioDia(data);
+    onDateChange(corrigida);
+  };
+
   return (
     <div className="calendar-wrapper">
       <div className="calendar-header">
@@ -21,8 +33,8 @@ const CalendarComponent = ({ selectedDate, onDateChange }) => {
       </div>
 
       <Calendar
-        onChange={onDateChange}
-        value={selectedDate}
+        onChange={handleDateChange}
+        value={ajustarDataParaMeioDia(selectedDate)}
         locale="pt-BR"
       />
     </div>

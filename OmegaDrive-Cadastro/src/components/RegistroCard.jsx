@@ -2,21 +2,22 @@ import React from "react";
 
 const RegistroCard = ({ registro, onEditar, onExcluir }) => {
     const converterParaDataLocal = (dataUTCString) => {
-        try {
-            const originalDate = new Date(dataUTCString);
-            if (isNaN(originalDate.getTime())) return "Data inválida";
-
-            // Corrige o horário para 12h (meio-dia) para evitar fuso negativo
-            const ajustada = new Date(originalDate);
-            ajustada.setHours(12, 0, 0, 0);
-
-            return ajustada.toLocaleDateString("pt-BR");
-        } catch {
-            return "Data inválida";
+        if (!dataUTCString || typeof dataUTCString !== "string") {
+            return "Data não disponível";
         }
+
+        const originalDate = new Date(dataUTCString);
+        if (isNaN(originalDate.getTime())) return "Data inválida";
+
+        // Ajusta para 12h para evitar problemas de fuso horário
+        const ajustada = new Date(originalDate);
+        ajustada.setHours(12, 0, 0, 0);
+
+        return ajustada.toLocaleDateString("pt-BR");
     };
 
     const dataValida = converterParaDataLocal(registro.dataMarcada);
+
 
     const kmInicial = parseFloat(registro.kmInicial ?? registro.kmIda ?? 0);
     const kmFinal = parseFloat(registro.kmFinal ?? registro.kmVolta ?? 0);
@@ -97,3 +98,6 @@ const RegistroCard = ({ registro, onEditar, onExcluir }) => {
 };
 
 export default RegistroCard;
+
+
+

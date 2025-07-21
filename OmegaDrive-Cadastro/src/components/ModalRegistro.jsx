@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
-const parseDate = (dateValue) => {
+const formatDateToISODateString = (dateValue) => {
   if (!dateValue) return "";
   const d = new Date(dateValue);
   if (isNaN(d)) return "";
@@ -22,7 +22,7 @@ const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
     kmFinal: "",
     horaInicio: "",
     horaSaida: "",
-    data: parseDate(dataSelecionada),
+    data: formatDateToISODateString(dataSelecionada),
     editadoPor: "",
     observacoes: "",
   });
@@ -37,16 +37,19 @@ const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
         veiculo: registro.veiculo || "",
         placa: registro.placa || "",
         destino: registro.destino || "",
-        kmInicial: registro.kmIda !== undefined ? registro.kmIda : "",
-        kmFinal: registro.kmVolta !== undefined ? registro.kmVolta : "",
+        kmInicial: registro.kmIda ?? "",
+        kmFinal: registro.kmVolta ?? "",
         horaInicio: registro.horaInicio || "",
         horaSaida: registro.horaSaida || "",
-        data: parseDate(registro.dataMarcada || dataSelecionada),
+        data: formatDateToISODateString(registro.dataMarcada || dataSelecionada),
         editadoPor: registro.editadoPor || "",
-        observacoes: registro.observacoes || "",
+        observacoes: registro.observacoes || registro.observacao || "",
       });
     } else {
-      setFormData((prev) => ({ ...prev, data: parseDate(dataSelecionada) }));
+      setFormData((prev) => ({
+        ...prev,
+        data: formatDateToISODateString(dataSelecionada),
+      }));
     }
   }, [registro, dataSelecionada]);
 
@@ -89,21 +92,20 @@ const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
     e.preventDefault();
     if (!validar()) return;
 
-    // 🔧 Correção da data com hora 12:00
     const [ano, mes, dia] = formData.data.split("-");
-    const dataMarcada = new Date(ano, mes - 1, dia, 12, 0, 0); // Define hora local 12:00
+    const dataMarcada = new Date(ano, mes - 1, dia, 12, 0, 0); // fixa 12h
 
     const payload = {
       id: registro?.id || null,
       condutor: formData.condutor,
       rgCondutor: formData.rg,
-      dataMarcada: dataMarcada.toISOString(), // ✅ Corrigido para evitar erro de fuso
+      dataMarcada: dataMarcada.toISOString(),
       horaInicio: formData.horaInicio,
       horaSaida: formData.horaSaida,
       destino: formData.destino,
       kmIda: parseFloat(formData.kmInicial),
       kmVolta: parseFloat(formData.kmFinal),
-      observacoes: formData.observacoes || null,
+      observacao: formData.observacoes || null, // ✅ campo corrigido
       editadoPor: formData.editadoPor || null,
       veiculo: formData.veiculo,
       placa: formData.placa,
@@ -153,20 +155,21 @@ const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
             ))}
 
             {[
-              { id: "kmInicial", label: "Km Inicial" },
-              { id: "kmFinal", label: "Km Final" },
+              { id: "kmInicial", label: "Km Inicial", type: "number" },
+              { id: "kmFinal", label: "Km Final", type: "number" },
               { id: "horaInicio", label: "Hora de Início", type: "time" },
               { id: "horaSaida", label: "Hora de Saída", type: "time" },
-            ].map(({ id, label, type = "number" }) => (
+            ].map(({ id, label, type }) => (
               <div key={id}>
                 <label htmlFor={id}>{label}</label>
                 <input
                   id={id}
                   name={id}
                   type={type}
-                  min="0"
                   value={formData[id]}
                   onChange={handleChange}
+                  min={type === "number" ? "0" : undefined}
+                  step={type === "number" ? "1" : undefined}
                   aria-invalid={!!erros[id]}
                   aria-describedby={erros[id] ? `${id}-error` : undefined}
                 />
@@ -184,7 +187,7 @@ const ModalRegistro = ({ registro, onClose, onSalvar, dataSelecionada }) => {
                 id="data"
                 name="data"
                 type="date"
-                value={formData.data || ""}
+                value={formData.data}
                 onChange={handleChange}
               />
             </div>

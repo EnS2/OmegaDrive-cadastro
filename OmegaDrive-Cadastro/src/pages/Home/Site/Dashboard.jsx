@@ -26,20 +26,21 @@ const formatarDataExtensa = (data) =>
       month: "long",
     }).toLowerCase()
     : "";
-
 const formatarDataYYYYMMDD = (date) => {
   if (!date) return "";
-  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
+  const d = new Date(date);
+  d.setHours(12, 0, 0, 0); // Garante que a hora seja 12:00 (meio-dia)
+  return d.toISOString(); // Ex: 2025-07-21T12:00:00.000Z
 };
 
+
 const parseDataLocal = (dataISO) => {
-  if (!dataISO) return null;
+  if (!dataISO || !/^\d{4}-\d{2}-\d{2}$/.test(dataISO)) return null;
   const [ano, mes, dia] = dataISO.split("-");
-  return new Date(Number(ano), Number(mes) - 1, Number(dia));
+  const d = new Date(Number(ano), Number(mes) - 1, Number(dia));
+  if (isNaN(d.getTime())) return null;
+  d.setHours(12, 0, 0, 0);
+  return d;
 };
 
 const getKm = (a, b) => {
@@ -48,12 +49,17 @@ const getKm = (a, b) => {
   return isNaN(num) ? 0 : num;
 };
 
+const ajustarDataParaMeioDia = (data) => {
+  const nova = new Date(data);
+  nova.setHours(12, 0, 0, 0);
+  return nova;
+};
+
 const Dashboard = () => {
   const [selectedDate, setSelectedDate] = useState(() => {
     const salva = localStorage.getItem("selectedDate");
-    const d = salva ? new Date(salva) : new Date();
-    d.setHours(12, 0, 0, 0);
-    return d;
+    const d = salva ? parseDataLocal(salva) : ajustarDataParaMeioDia(new Date());
+    return d ?? ajustarDataParaMeioDia(new Date());
   });
 
   const [mostrarModal, setMostrarModal] = useState(false);
@@ -70,7 +76,7 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("selectedDate", selectedDate.toISOString());
+    localStorage.setItem("selectedDate", formatarDataYYYYMMDD(selectedDate));
   }, [selectedDate]);
 
   useEffect(() => {
@@ -79,10 +85,12 @@ const Dashboard = () => {
         const dataFormatada = formatarDataYYYYMMDD(selectedDate);
         const resposta = await buscarRegistrosDoDia(dataFormatada);
 
-        const registrosConvertidos = resposta.map((r) => ({
-          ...r,
-          dataMarcada: parseDataLocal(r.dataISO ?? r.dataMarcada),
-        }));
+        const registrosConvertidos = resposta.map((r) => {
+          return {
+            ...r,
+            dataCriada: parseDataLocal(r.dataMarcada),
+          };
+        });
 
         registrosConvertidos.sort((a, b) => {
           const ha = a.horaSaida ?? a.horaInicio ?? "";
@@ -114,8 +122,7 @@ const Dashboard = () => {
 
   const onDateChange = (date) => {
     if (!date) return;
-    const d = new Date(date);
-    d.setHours(12, 0, 0, 0);
+    const d = ajustarDataParaMeioDia(date);
     setSelectedDate(d);
   };
 
@@ -130,7 +137,7 @@ const Dashboard = () => {
 
       const novoRegistro = {
         ...salvo,
-        dataMarcada: parseDataLocal(salvo.dataISO ?? salvo.dataMarcada),
+        dataCriada: parseDataLocal(salvo.dataMarcada),
       };
 
       if (registroEditando) {
@@ -183,7 +190,7 @@ const Dashboard = () => {
               <span>{formatarDataExtensa(selectedDate)}</span>
               <Calendar
                 onChange={onDateChange}
-                value={selectedDate}
+                value={ajustarDataParaMeioDia(selectedDate)}
                 locale="pt-BR"
               />
             </div>
@@ -254,3 +261,7 @@ const ResumoItem = ({ label, valor }) => (
 );
 
 export default Dashboard;
+
+
+
+
