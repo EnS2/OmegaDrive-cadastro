@@ -20,7 +20,7 @@ import {
   salvarRegistro,
 } from "../services/api";
 
-// Formata data como "terça-feira, 9 de julho"
+// Helpers de data
 const formatarData = (date) =>
   date.toLocaleDateString("pt-BR", {
     weekday: "long",
@@ -28,7 +28,6 @@ const formatarData = (date) =>
     month: "long",
   });
 
-// Formata para yyyy-MM-dd fixando hora em 12h para evitar problemas de fuso horário
 const formatarDataSelecionada = (date) => {
   if (!date) return "";
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
@@ -37,7 +36,6 @@ const formatarDataSelecionada = (date) => {
   )}-${String(date.getDate()).padStart(2, "0")}`;
 };
 
-// Corrige o parse da data e fixa hora em 12h para evitar fuso horário
 const parseDataComHoraMeioDia = (iso) => {
   if (!iso) return null;
   const partes = iso.split("-");
@@ -65,15 +63,32 @@ const DashboardScreen = () => {
     carregarRegistros();
   }, [selectedDate]);
 
+  // ✅ FUNÇÃO CORRIGIDA: horários agora estão na ordem correta
   const carregarRegistros = async () => {
     try {
       const dataStr = formatarDataSelecionada(selectedDate);
       const resposta = await buscarRegistrosDoDia(dataStr);
 
       const convertidos = resposta.map((r) => {
-        const iso = r.dataISO || r.dataMarcada || r.data; // ex: "2025-07-10"
+        const iso = r.dataISO || r.dataMarcada || r.data;
         const dataCorrigida = parseDataComHoraMeioDia(iso);
-        return { ...r, data: dataCorrigida };
+
+        return {
+          ...r,
+          data: dataCorrigida,
+
+          // ✅ Início agora realmente representa o horário de ida
+          horarioInicio:
+            r.horarioInicio ||
+            r.horario_inicio ||
+            r.horaRetorno ||
+            r.horaEntrada ||
+            "",
+
+          // ✅ Fim agora representa o horário de volta/saída
+          horarioFim:
+            r.horarioFim || r.horario_fim || r.horaSaida || r.hora_saida || "",
+        };
       });
 
       setRegistros(convertidos);

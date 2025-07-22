@@ -2,11 +2,39 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 
 const RegistroCard = ({ registro, onEditar, onExcluir }) => {
-  const dataValida =
-    registro.data instanceof Date && !isNaN(registro.data)
-      ? registro.data.toLocaleDateString("pt-BR")
-      : "Data inválida";
+  // Validação e formatação da data
+  let dataValida = "Data inválida";
+  try {
+    const dataObj = new Date(registro.data);
+    dataValida = !isNaN(dataObj) ? dataObj.toLocaleDateString("pt-BR") : "Data inválida";
+  } catch {
+    dataValida = "Data inválida";
+  }
 
+  // Função para formatar horários (ex: "08:00:00" => "08:00")
+  const formatarHora = (horaStr) => (horaStr ? horaStr.slice(0, 5) : "--");
+
+  // Horários - cobre várias possíveis variações de nome
+  const horarioInicio =
+    registro.inicio ||
+    registro.horaInicio ||
+    registro.horarioInicio ||
+    null;
+
+  const horarioFim =
+    registro.fim ||
+    registro.horaFim ||
+    registro.horaSaida ||
+    registro.horaRetorno ||
+    registro.horarioFim ||
+    null;
+
+  // Log para debug
+  console.log("Registro recebido:", registro);
+  console.log("Horário início:", horarioInicio);
+  console.log("Horário fim:", horarioFim);
+
+  // KM
   const kmInicial = parseFloat(registro.kmInicial ?? registro.kmIda ?? 0);
   const kmFinal = parseFloat(registro.kmFinal ?? registro.kmVolta ?? 0);
   const kmTotal = !isNaN(kmFinal - kmInicial) ? kmFinal - kmInicial : "--";
@@ -40,10 +68,13 @@ const RegistroCard = ({ registro, onEditar, onExcluir }) => {
             </Text>
           )}
 
-          {(registro.horaSaida || registro.horaRetorno) && (
+          {/* Horários */}
+          {(horarioInicio || horarioFim) && (
             <Text style={styles.text}>
               <Text style={styles.bold}>Horário:</Text>{" "}
-              {registro.horaSaida || "--"} → {registro.horaRetorno || "--"}
+              {horarioInicio ? formatarHora(horarioInicio) : "--"}
+              {" → "}
+              {horarioFim ? formatarHora(horarioFim) : "--"}
             </Text>
           )}
 

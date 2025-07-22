@@ -56,8 +56,8 @@ const formatarDataParaBackend = (dateValue) => {
 const adaptarPayloadParaBackend = (dados) => ({
   rgCondutor: dados.rgCondutor || "",
   dataMarcada: formatarDataParaBackend(dados.dataMarcada),
-  horaInicio: dados.horaInicio || null,
-  horaSaida: dados.horaSaida || null,
+  horaInicio: dados.horaInicio || "",
+  horaSaida: dados.horaSaida || "",
   destino: dados.destino || null,
   kmIda: isNaN(Number(dados.kmIda)) ? 0 : Number(dados.kmIda),
   kmVolta: isNaN(Number(dados.kmVolta)) ? 0 : Number(dados.kmVolta),

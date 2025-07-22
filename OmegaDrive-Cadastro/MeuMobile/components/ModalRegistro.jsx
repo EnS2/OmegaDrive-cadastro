@@ -68,7 +68,7 @@ const ModalRegistro = ({
             "placa",
             "kmIda",
             "kmVolta",
-            "horaSaida",
+            "horaInicio", // atualizado: campo obrigatório correto
         ];
         for (let campo of obrigatorios) {
             if (!dados[campo]) return false;
@@ -161,18 +161,19 @@ const ModalRegistro = ({
                             />
                         </View>
 
+                        {/* Horários invertidos */}
                         <View style={styles.inputGroup}>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Hora Saída"
-                                value={dados.horaSaida}
-                                onChangeText={(v) => handleChange("horaSaida", v)}
-                            />
                             <TextInput
                                 style={styles.input}
                                 placeholder="Hora Início"
                                 value={dados.horaInicio}
                                 onChangeText={(v) => handleChange("horaInicio", v)}
+                            />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Hora Saída"
+                                value={dados.horaSaida}
+                                onChangeText={(v) => handleChange("horaSaida", v)}
                             />
                         </View>
 

@@ -9,7 +9,6 @@ const RegistroCard = ({ registro, onEditar, onExcluir }) => {
         const originalDate = new Date(dataUTCString);
         if (isNaN(originalDate.getTime())) return "Data inválida";
 
-        // Ajusta para 12h para evitar problemas de fuso horário
         const ajustada = new Date(originalDate);
         ajustada.setHours(12, 0, 0, 0);
 
@@ -17,7 +16,6 @@ const RegistroCard = ({ registro, onEditar, onExcluir }) => {
     };
 
     const dataValida = converterParaDataLocal(registro.dataMarcada);
-
 
     const kmInicial = parseFloat(registro.kmInicial ?? registro.kmIda ?? 0);
     const kmFinal = parseFloat(registro.kmFinal ?? registro.kmVolta ?? 0);
@@ -27,10 +25,8 @@ const RegistroCard = ({ registro, onEditar, onExcluir }) => {
     const formatarKm = (valor) =>
         typeof valor === "number" && !isNaN(valor) ? `${valor} km` : "--";
 
-    const horarios =
-        registro.horaSaida || registro.horaRetorno || registro.horaInicio
-            ? `${registro.horaSaida ?? registro.horaInicio ?? "--"} → ${registro.horaRetorno ?? "--"}`
-            : null;
+    // ✅ Mostra sempre: horaInicio → horaSaida
+    const horarios = `${registro.horaInicio ?? "--"} → ${registro.horaSaida ?? "--"}`;
 
     return (
         <div className="registro-card">
@@ -52,11 +48,9 @@ const RegistroCard = ({ registro, onEditar, onExcluir }) => {
                             <strong>Destino:</strong> {registro.destino}
                         </p>
                     )}
-                    {horarios && (
-                        <p>
-                            <strong>Horário:</strong> {horarios}
-                        </p>
-                    )}
+                    <p>
+                        <strong>Horário:</strong> {horarios}
+                    </p>
                     {registro.observacao && (
                         <p>
                             <strong>Observações:</strong> {registro.observacao}
@@ -98,6 +92,8 @@ const RegistroCard = ({ registro, onEditar, onExcluir }) => {
 };
 
 export default RegistroCard;
+
+
 
 
 
