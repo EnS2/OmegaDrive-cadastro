@@ -18,7 +18,7 @@ import {
   buscarRegistrosDoDia,
   deletarRegistro,
   salvarRegistro,
-} from "../services/api";
+} from "@services/api";
 
 // Helpers de data
 const formatarData = (date) =>

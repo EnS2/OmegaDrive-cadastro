@@ -68,7 +68,7 @@ const ModalRegistro = ({
             "placa",
             "kmIda",
             "kmVolta",
-            "horaInicio", // atualizado: campo obrigatório correto
+            "horaInicio",
         ];
         for (let campo of obrigatorios) {
             if (!dados[campo]) return false;
@@ -109,7 +109,7 @@ const ModalRegistro = ({
                     <ScrollView contentContainerStyle={styles.form}>
                         <View style={styles.inputGroup}>
                             <TextInput
-                                style={styles.input}
+                                style={[styles.input, { marginRight: 10 }]}
                                 placeholder="Condutor"
                                 value={dados.condutor}
                                 onChangeText={(v) => handleChange("condutor", v)}
@@ -124,7 +124,7 @@ const ModalRegistro = ({
 
                         <View style={styles.inputGroup}>
                             <TextInput
-                                style={styles.input}
+                                style={[styles.input, { marginRight: 10 }]}
                                 placeholder="Veículo"
                                 value={dados.veiculo}
                                 onChangeText={(v) => handleChange("veiculo", v)}
@@ -146,7 +146,7 @@ const ModalRegistro = ({
 
                         <View style={styles.inputGroup}>
                             <TextInput
-                                style={styles.input}
+                                style={[styles.input, { marginRight: 10 }]}
                                 placeholder="Km Inicial"
                                 keyboardType="numeric"
                                 value={dados.kmIda}
@@ -161,10 +161,9 @@ const ModalRegistro = ({
                             />
                         </View>
 
-                        {/* Horários invertidos */}
                         <View style={styles.inputGroup}>
                             <TextInput
-                                style={styles.input}
+                                style={[styles.input, { marginRight: 10 }]}
                                 placeholder="Hora Início"
                                 value={dados.horaInicio}
                                 onChangeText={(v) => handleChange("horaInicio", v)}
@@ -177,7 +176,6 @@ const ModalRegistro = ({
                             />
                         </View>
 
-                        {/* Seletor de Data */}
                         <TouchableOpacity
                             style={styles.input}
                             onPress={() => setMostrarDataPicker(true)}
@@ -273,7 +271,6 @@ const styles = StyleSheet.create({
     },
     inputGroup: {
         flexDirection: "row",
-        gap: 10,
         justifyContent: "space-between",
     },
     input: {
@@ -291,13 +288,13 @@ const styles = StyleSheet.create({
     footer: {
         flexDirection: "row",
         justifyContent: "flex-end",
-        gap: 10,
         marginTop: 12,
     },
     cancel: {
         padding: 10,
         borderRadius: 6,
         backgroundColor: "#e5e7eb",
+        marginRight: 10,
     },
     save: {
         padding: 10,

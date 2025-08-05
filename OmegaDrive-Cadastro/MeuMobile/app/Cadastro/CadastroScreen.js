@@ -10,8 +10,8 @@ import {
   StyleSheet,
 } from "react-native";
 
-import Omega from "@assets/Omega.png"; // usando alias
-import { cadastrar } from "@services/api"; // usando alias
+import Omega from "@assets/Omega.png"; // ✅ usando alias definido
+import { cadastrar } from "@services/api"; // ✅ usando alias definido
 
 export default function CadastroScreen({ navigation }) {
   const [nome, setNome] = useState("");
