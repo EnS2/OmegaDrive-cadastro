@@ -96,7 +96,7 @@ html, body {
 /* CALENDÁRIO + RESUMO */
 /* ========================== */
 .calendar-summary-card {
-  margin-top: 8rem;
+  margin-top: 10rem; /* <-- Aumentado de 8rem para 10rem */
   background-color: #f8f9ff;
   border: 1px solid #e0e7ff;
   border-radius: 16px;
@@ -167,7 +167,7 @@ html, body {
 /* REGISTROS DO DIA */
 /* ========================== */
 .records-section {
-  margin-top: 4rem;
+  margin-top: 6rem;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -187,7 +187,7 @@ html, body {
 }
 
 .new-record-button {
-  margin-top: 4rem;
+  margin-top: 5rem; /* <-- Aumentado de 4rem para 5rem */
   background: #7b2ff7;
   color: white;
   border: none;
