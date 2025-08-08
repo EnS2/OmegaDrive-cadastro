@@ -1,18 +1,26 @@
 {
   "expo": {
-    "name": "OmegaDrive",
-    "slug": "meumobile",
+    "name": "omegadrive",
+    "slug": "omegadrive",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/Icone.png",
-    "splash": {
-      "image": "./assets/Icone.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "6ffffa17-c665-4483-8814-1e09b6fadbc1"
+      }
     },
-    "updates": {
-      "fallbackToCacheTimeout": 0
+    "android": {
+      "package": "com.enzopalomaro.omegadrive"
     },
-    "assetBundlePatterns": ["**/*"]
+    "ios": {
+      "bundleIdentifier": "com.enzopalomaro.omegadrive",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    }
   }
 }

@@ -77,7 +77,7 @@ const DashboardScreen = () => {
           ...r,
           data: dataCorrigida,
 
-          // ✅ Início agora realmente representa o horário de ida
+          // ✅ Início representa horário de ida
           horarioInicio:
             r.horarioInicio ||
             r.horario_inicio ||
@@ -85,7 +85,7 @@ const DashboardScreen = () => {
             r.horaEntrada ||
             "",
 
-          // ✅ Fim agora representa o horário de volta/saída
+          // ✅ Fim representa horário de volta/saída
           horarioFim:
             r.horarioFim || r.horario_fim || r.horaSaida || r.hora_saida || "",
         };
