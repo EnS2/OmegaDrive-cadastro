@@ -1,26 +1,13 @@
 {
   "expo": {
-    "name": "omegadrive",
-    "slug": "omegadrive",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/Icone.png",
-    "assetBundlePatterns": [
-      "**/*"
-    ],
     "extra": {
       "eas": {
-        "projectId": "6ffffa17-c665-4483-8814-1e09b6fadbc1"
+        "projectId": "592acb86-97fa-439b-9293-361f92927d12"
       }
     },
+    "owner": "enzopalomaro",
     "android": {
       "package": "com.enzopalomaro.omegadrive"
-    },
-    "ios": {
-      "bundleIdentifier": "com.enzopalomaro.omegadrive",
-      "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
-      }
     }
   }
 }
