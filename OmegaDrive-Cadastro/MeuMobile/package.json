@@ -29,6 +29,7 @@
     }
   },
   "devDependencies": {
+    "@react-native-community/cli": "^20.0.0",
     "babel-plugin-module-resolver": "^5.0.2",
     "metro": "^0.82.5"
   },
@@ -39,6 +40,7 @@
     "@react-navigation/native-stack": "^7.3.24",
     "axios": "^1.11.0",
     "buffer": "^6.0.3",
+    "expo": "^53.0.20",
     "lucide-react-native": "^0.539.0",
     "metro-config": "^0.82.5",
     "metro-resolver": "^0.82.5",
@@ -55,7 +57,9 @@
   "description": "This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "keywords": [],
   "author": "",
