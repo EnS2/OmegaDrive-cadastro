@@ -1,13 +1,31 @@
 {
-  "expo": {
-    "extra": {
-      "eas": {
-        "projectId": "592acb86-97fa-439b-9293-361f92927d12"
-      }
+  "icon": "./assets/adaptive-icon.png",
+  "splash": {
+    "image": "./assets/adaptive-icon.png",
+    "resizeMode": "contain",
+    "backgroundColor": "#ffffff"
+  },
+  "android": {
+    "adaptiveIcon": {
+      "foregroundImage": "./assets/adaptive-icon.png",
+      "backgroundColor": "#FFFFFF"
     },
-    "owner": "enzopalomaro",
-    "android": {
-      "package": "com.enzopalomaro.omegadrive"
+    "icon": "./assets/adaptive-icon.png",
+    "package": "com.enzopalomaro.meumobile",
+    "runtimeVersion": "1.0.0"
+  },
+  "ios": {
+    "icon": "./assets/adaptive-icon.png",
+    "runtimeVersion": {
+      "policy": "appVersion"
     }
+  },
+  "extra": {
+    "eas": {
+      "projectId": "59df5902-41f4-4461-a67b-db6d287292e4"
+    }
+  },
+  "updates": {
+    "url": ""
   }
 }

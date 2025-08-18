@@ -2,7 +2,7 @@
   "expo": {
     "name": "omegadrive",
     "slug": "omegadrive",
-    "version": "1.0.0",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {
@@ -50,7 +50,9 @@
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
     "react-native-svg": "15.11.2",
-    "recyclerlistview": "^4.2.3"
+    "recyclerlistview": "^4.2.3",
+    "expo-dev-client": "~5.2.4",
+    "expo-updates": "~0.28.17"
   },
   "name": "meumobile",
   "version": "1.0.0",

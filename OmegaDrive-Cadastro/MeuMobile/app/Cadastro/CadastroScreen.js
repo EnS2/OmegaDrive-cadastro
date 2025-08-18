@@ -25,7 +25,7 @@ export default function CadastroScreen({ navigation }) {
         return;
       }
 
-      await cadastrar({ nome, email, senha });
+      await cadastrar({ name: nome, email, password: senha });
 
       Alert.alert("Sucesso", "Usuário cadastrado com sucesso!", [
         {

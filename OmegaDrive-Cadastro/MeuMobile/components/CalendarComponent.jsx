@@ -6,11 +6,11 @@ const CalendarComponent = ({ selectedDate, onDateChange }) => {
   const [showPicker, setShowPicker] = useState(false);
 
   const formatarData = (data) => {
-    return data.toLocaleDateString("pt-BR", {
+    return new Intl.DateTimeFormat("pt-BR", {
       weekday: "long",
       day: "numeric",
       month: "long",
-    });
+    }).format(data);
   };
 
   const handleChange = (event, date) => {

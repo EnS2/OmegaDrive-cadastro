@@ -2,11 +2,32 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 
 const RegistroCard = ({ registro, onEditar, onExcluir }) => {
-  // Validação e formatação da data
+  // Formatação de data corrigida
   let dataValida = "Data inválida";
   try {
-    const dataObj = new Date(registro.data);
-    dataValida = !isNaN(dataObj) ? dataObj.toLocaleDateString("pt-BR") : "Data inválida";
+    if (registro.data) {
+      // Se for objeto Date
+      if (registro.data instanceof Date && !isNaN(registro.data)) {
+        const dia = registro.data.getDate();
+        const mes = registro.data.getMonth() + 1;
+        const ano = registro.data.getFullYear();
+        dataValida = `${String(dia).padStart(2, "0")}/${String(mes).padStart(2, "0")}/${ano}`;
+      }
+      // Se for string
+      else if (typeof registro.data === "string") {
+        const partes = registro.data.split("-");
+        if (partes.length === 3) {
+          const [ano, mes, dia] = partes.map(Number);
+          dataValida = `${String(dia).padStart(2, "0")}/${String(mes).padStart(2, "0")}/${ano}`;
+        } else {
+          // fallback para string qualquer
+          const dataObj = new Date(registro.data + "T12:00:00"); // força horário local
+          if (!isNaN(dataObj)) {
+            dataValida = `${String(dataObj.getDate()).padStart(2, "0")}/${String(dataObj.getMonth() + 1).padStart(2, "0")}/${dataObj.getFullYear()}`;
+          }
+        }
+      }
+    }
   } catch {
     dataValida = "Data inválida";
   }
@@ -14,7 +35,7 @@ const RegistroCard = ({ registro, onEditar, onExcluir }) => {
   // Função para formatar horários (ex: "08:00:00" => "08:00")
   const formatarHora = (horaStr) => (horaStr ? horaStr.slice(0, 5) : "--");
 
-  // Horários - cobre várias possíveis variações de nome
+  // Horários
   const horarioInicio =
     registro.inicio ||
     registro.horaInicio ||
@@ -28,11 +49,6 @@ const RegistroCard = ({ registro, onEditar, onExcluir }) => {
     registro.horaRetorno ||
     registro.horarioFim ||
     null;
-
-  // Log para debug
-  console.log("Registro recebido:", registro);
-  console.log("Horário início:", horarioInicio);
-  console.log("Horário fim:", horarioFim);
 
   // KM
   const kmInicial = parseFloat(registro.kmInicial ?? registro.kmIda ?? 0);
@@ -196,4 +212,3 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 });
-

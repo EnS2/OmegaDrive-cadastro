@@ -87,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.enzopalomaro.omegadrive'
+    namespace 'com.enzopalomaro.meumobile'
     defaultConfig {
-        applicationId 'com.enzopalomaro.omegadrive'
+        applicationId 'com.enzopalomaro.meumobile'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

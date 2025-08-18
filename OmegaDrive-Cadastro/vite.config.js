@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 import path from "path";
 import { fileURLToPath } from "url";
 
+// Correção de __dirname em módulos ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -21,16 +22,16 @@ export default defineConfig({
     extensions: [".js", ".jsx", ".ts", ".tsx", ".json"],
   },
   server: {
-    host: true, // <- Esta linha permite o acesso externo (via IP)
+    host: true, // Permite acesso externo via IP
     port: 5173,
     open: true,
     strictPort: true,
     proxy: {
       "/api": {
-        target: "http://localhost:4000",
+        target: "http://localhost:4000", // Backend
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => path.replace(/^\/api/, ""),
+        rewrite: (path) => path.replace(/^\/api/, ""), // Remove "/api" na requisição
       },
     },
   },

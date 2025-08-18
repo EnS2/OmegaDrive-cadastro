@@ -1,4 +1,4 @@
-package com.enzopalomaro.omegadrive
+package com.enzopalomaro.meumobile
 
 import android.app.Application
 import android.content.res.Configuration

@@ -12,7 +12,9 @@ import {
 import DateTimePicker from "@react-native-community/datetimepicker";
 
 const formatarDataISO = (data) => {
-    return `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, "0")}-${String(data.getDate()).padStart(2, "0")}`;
+    const d = new Date(data);
+    d.setHours(12, 0, 0, 0);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 };
 
 const ModalRegistro = ({
@@ -111,12 +113,14 @@ const ModalRegistro = ({
                             <TextInput
                                 style={[styles.input, { marginRight: 10 }]}
                                 placeholder="Condutor"
+                                placeholderTextColor="#000"
                                 value={dados.condutor}
                                 onChangeText={(v) => handleChange("condutor", v)}
                             />
                             <TextInput
                                 style={styles.input}
                                 placeholder="RG"
+                                placeholderTextColor="#000"
                                 value={dados.rgCondutor}
                                 onChangeText={(v) => handleChange("rgCondutor", v)}
                             />
@@ -126,12 +130,14 @@ const ModalRegistro = ({
                             <TextInput
                                 style={[styles.input, { marginRight: 10 }]}
                                 placeholder="Veículo"
+                                placeholderTextColor="#000"
                                 value={dados.veiculo}
                                 onChangeText={(v) => handleChange("veiculo", v)}
                             />
                             <TextInput
                                 style={styles.input}
                                 placeholder="Placa"
+                                placeholderTextColor="#000"
                                 value={dados.placa}
                                 onChangeText={(v) => handleChange("placa", v)}
                             />
@@ -140,6 +146,7 @@ const ModalRegistro = ({
                         <TextInput
                             style={styles.input}
                             placeholder="Destino"
+                            placeholderTextColor="#000"
                             value={dados.destino}
                             onChangeText={(v) => handleChange("destino", v)}
                         />
@@ -148,6 +155,7 @@ const ModalRegistro = ({
                             <TextInput
                                 style={[styles.input, { marginRight: 10 }]}
                                 placeholder="Km Inicial"
+                                placeholderTextColor="#000"
                                 keyboardType="numeric"
                                 value={dados.kmIda}
                                 onChangeText={(v) => handleChange("kmIda", v)}
@@ -155,6 +163,7 @@ const ModalRegistro = ({
                             <TextInput
                                 style={styles.input}
                                 placeholder="Km Final"
+                                placeholderTextColor="#000"
                                 keyboardType="numeric"
                                 value={dados.kmVolta}
                                 onChangeText={(v) => handleChange("kmVolta", v)}
@@ -165,12 +174,14 @@ const ModalRegistro = ({
                             <TextInput
                                 style={[styles.input, { marginRight: 10 }]}
                                 placeholder="Hora Início"
+                                placeholderTextColor="#000"
                                 value={dados.horaInicio}
                                 onChangeText={(v) => handleChange("horaInicio", v)}
                             />
                             <TextInput
                                 style={styles.input}
                                 placeholder="Hora Saída"
+                                placeholderTextColor="#000"
                                 value={dados.horaSaida}
                                 onChangeText={(v) => handleChange("horaSaida", v)}
                             />
@@ -180,9 +191,12 @@ const ModalRegistro = ({
                             style={styles.input}
                             onPress={() => setMostrarDataPicker(true)}
                         >
-                            <Text style={{ color: dados.dataMarcada ? "#000" : "#888" }}>
+                            <Text style={{ color: "#000" }}>
                                 {dados.dataMarcada
-                                    ? new Date(dados.dataMarcada).toLocaleDateString()
+                                    ? (() => {
+                                        const [ano, mes, dia] = dados.dataMarcada.split("-").map(Number);
+                                        return `${String(dia).padStart(2, "0")}/${String(mes).padStart(2, "0")}/${ano}`;
+                                    })()
                                     : "Selecione a data"}
                             </Text>
                         </TouchableOpacity>
@@ -191,7 +205,10 @@ const ModalRegistro = ({
                             <DateTimePicker
                                 value={
                                     dados.dataMarcada
-                                        ? new Date(dados.dataMarcada)
+                                        ? (() => {
+                                            const [ano, mes, dia] = dados.dataMarcada.split("-").map(Number);
+                                            return new Date(ano, mes - 1, dia, 12);
+                                        })()
                                         : new Date()
                                 }
                                 mode="date"
@@ -199,10 +216,7 @@ const ModalRegistro = ({
                                 onChange={(event, selectedDate) => {
                                     if (Platform.OS !== "ios") setMostrarDataPicker(false);
                                     if (selectedDate) {
-                                        handleChange(
-                                            "dataMarcada",
-                                            formatarDataISO(selectedDate)
-                                        );
+                                        handleChange("dataMarcada", formatarDataISO(selectedDate));
                                     }
                                 }}
                             />
@@ -211,6 +225,7 @@ const ModalRegistro = ({
                         <TextInput
                             style={styles.input}
                             placeholder="Editado por (opcional)"
+                            placeholderTextColor="#000"
                             value={dados.editadoPor}
                             onChangeText={(v) => handleChange("editadoPor", v)}
                         />
@@ -218,6 +233,7 @@ const ModalRegistro = ({
                         <TextInput
                             style={[styles.input, styles.textarea]}
                             placeholder="Observações (opcional)"
+                            placeholderTextColor="#000"
                             multiline
                             numberOfLines={4}
                             value={dados.observacao}
@@ -244,16 +260,21 @@ export default ModalRegistro;
 const styles = StyleSheet.create({
     overlay: {
         flex: 1,
-        backgroundColor: "#00000099",
+        backgroundColor: "rgba(0,0,0,0.6)",
         justifyContent: "center",
         alignItems: "center",
     },
     modalContainer: {
-        backgroundColor: "#fff",
+        backgroundColor: "#ffffff",
         padding: 20,
         borderRadius: 16,
         width: "92%",
         maxHeight: "90%",
+        elevation: 8,
+        shadowColor: "#000",
+        shadowOpacity: 0.3,
+        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 2 },
     },
     header: {
         fontSize: 20,
@@ -275,11 +296,14 @@ const styles = StyleSheet.create({
     },
     input: {
         flex: 1,
-        backgroundColor: "#f3f4f6",
+        backgroundColor: "#ffffff",
         borderRadius: 8,
         paddingHorizontal: 12,
         paddingVertical: 10,
         marginVertical: 6,
+        borderWidth: 1,
+        borderColor: "#ddd",
+        color: "#000", // 🔹 Texto preto
     },
     textarea: {
         minHeight: 80,

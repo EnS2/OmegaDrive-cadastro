@@ -14,7 +14,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import Omega from "@assets/Omega.png"; // ✅ usando alias
-import { login } from "@services/api"; // ✅ usando alias
+import { login, BASE_URL } from "@services/api"; // ✅ usando alias e BASE_URL
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("");
@@ -26,7 +26,7 @@ export default function LoginScreen({ navigation }) {
       if (!token) return;
 
       try {
-        const res = await fetch("http://SEU_BACKEND_URL/auth/me", {
+        const res = await fetch(`${BASE_URL}/auth/me`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,

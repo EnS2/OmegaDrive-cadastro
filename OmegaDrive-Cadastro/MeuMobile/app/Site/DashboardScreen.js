@@ -10,15 +10,58 @@ import {
   Alert,
 } from "react-native";
 import { Car, Plus } from "lucide-react-native";
-import { Calendar } from "react-native-calendars";
+import { Calendar, LocaleConfig } from "react-native-calendars"; // ⬅️ adicionado LocaleConfig
 import RegistroCard from "../../components/RegistroCard";
 import ModalRegistro from "../../components/ModalRegistro";
-
 import {
   buscarRegistrosDoDia,
   deletarRegistro,
   salvarRegistro,
 } from "@services/api";
+
+// ✅ Configuração do calendário para português
+LocaleConfig.locales["pt"] = {
+  monthNames: [
+    "Janeiro",
+    "Fevereiro",
+    "Março",
+    "Abril",
+    "Maio",
+    "Junho",
+    "Julho",
+    "Agosto",
+    "Setembro",
+    "Outubro",
+    "Novembro",
+    "Dezembro",
+  ],
+  monthNamesShort: [
+    "Jan",
+    "Fev",
+    "Mar",
+    "Abr",
+    "Mai",
+    "Jun",
+    "Jul",
+    "Ago",
+    "Set",
+    "Out",
+    "Nov",
+    "Dez",
+  ],
+  dayNames: [
+    "Domingo",
+    "Segunda-feira",
+    "Terça-feira",
+    "Quarta-feira",
+    "Quinta-feira",
+    "Sexta-feira",
+    "Sábado",
+  ],
+  dayNamesShort: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
+  today: "Hoje",
+};
+LocaleConfig.defaultLocale = "pt";
 
 // Helpers de data
 const formatarData = (date) =>
@@ -36,6 +79,7 @@ const formatarDataSelecionada = (date) => {
   )}-${String(date.getDate()).padStart(2, "0")}`;
 };
 
+// ✅ Correção: sempre cria a data no meio do dia para evitar erro de fuso
 const parseDataComHoraMeioDia = (iso) => {
   if (!iso) return null;
   const partes = iso.split("-");
@@ -43,15 +87,25 @@ const parseDataComHoraMeioDia = (iso) => {
     Number(partes[0]),
     Number(partes[1]) - 1,
     Number(partes[2]),
-    12
+    12,
+    0,
+    0,
+    0
   );
 };
 
 const DashboardScreen = () => {
   const [selectedDate, setSelectedDate] = useState(() => {
     const hoje = new Date();
-    hoje.setHours(12, 0, 0, 0);
-    return hoje;
+    return new Date(
+      hoje.getFullYear(),
+      hoje.getMonth(),
+      hoje.getDate(),
+      12,
+      0,
+      0,
+      0
+    );
   });
 
   const [mostrarModal, setMostrarModal] = useState(false);
@@ -63,7 +117,6 @@ const DashboardScreen = () => {
     carregarRegistros();
   }, [selectedDate]);
 
-  // ✅ FUNÇÃO CORRIGIDA: horários agora estão na ordem correta
   const carregarRegistros = async () => {
     try {
       const dataStr = formatarDataSelecionada(selectedDate);
@@ -76,16 +129,12 @@ const DashboardScreen = () => {
         return {
           ...r,
           data: dataCorrigida,
-
-          // ✅ Início representa horário de ida
           horarioInicio:
             r.horarioInicio ||
             r.horario_inicio ||
             r.horaRetorno ||
             r.horaEntrada ||
             "",
-
-          // ✅ Fim representa horário de volta/saída
           horarioFim:
             r.horarioFim || r.horario_fim || r.horaSaida || r.hora_saida || "",
         };
@@ -110,8 +159,8 @@ const DashboardScreen = () => {
     try {
       const dataMarcada = formatarDataSelecionada(selectedDate);
       const payload = { ...registro, dataMarcada };
-
       let salvo;
+
       if (registroEditando) {
         salvo = await salvarRegistro(registroEditando, payload);
       } else {
@@ -157,6 +206,7 @@ const DashboardScreen = () => {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.sidebar}>
           <Text style={styles.dataTexto}>{formatarData(selectedDate)}</Text>
+
           <Calendar
             onDayPress={(day) => {
               const [year, month, dayNum] = day.dateString
@@ -236,28 +286,16 @@ const DashboardScreen = () => {
 export default DashboardScreen;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f4f4f4",
-  },
+  container: { flex: 1, backgroundColor: "#f4f4f4" },
   topBar: {
     backgroundColor: "#7b2ff7",
     padding: 16,
     flexDirection: "row",
     alignItems: "center",
   },
-  titulo: {
-    fontSize: 20,
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  subtitulo: {
-    fontSize: 14,
-    color: "#e0e0e0",
-  },
-  content: {
-    padding: 16,
-  },
+  titulo: { fontSize: 20, color: "#fff", fontWeight: "bold" },
+  subtitulo: { fontSize: 14, color: "#e0e0e0" },
+  content: { padding: 16 },
   sidebar: {
     marginBottom: 24,
     backgroundColor: "#fff",
@@ -270,19 +308,16 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginBottom: 12,
     color: "#333",
+    textTransform: "capitalize", // deixa a primeira letra maiúscula
   },
-  resumo: {
-    marginTop: 20,
-  },
+  resumo: { marginTop: 20 },
   resumoTitulo: {
     fontWeight: "bold",
     fontSize: 16,
     marginBottom: 4,
     color: "#4b0082",
   },
-  section: {
-    marginTop: 16,
-  },
+  section: { marginTop: 16 },
   button: {
     flexDirection: "row",
     backgroundColor: "#9333ea",
@@ -292,8 +327,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 16,
   },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
+  buttonText: { color: "#fff", fontWeight: "bold" },
 });
