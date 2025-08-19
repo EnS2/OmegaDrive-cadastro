@@ -26,6 +26,9 @@
     }
   },
   "updates": {
-    "url": ""
+    "url": "https://u.expo.dev/59df5902-41f4-4461-a67b-db6d287292e4"
+  },
+  "packagerOpts": {
+    "hostType": "lan"
   }
 }
