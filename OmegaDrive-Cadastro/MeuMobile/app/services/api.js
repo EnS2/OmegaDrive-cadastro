@@ -1,22 +1,21 @@
+// api.js
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
 
 // ===== CONFIGURAÇÕES =====
-// Se for Android Emulator -> usar 10.0.2.2
-// Se for iOS Simulator -> localhost
-// Se for celular físico -> coloque o IP do PC na rede local
-const LOCAL_IP = "192.168.15.12"; // ⚠️ IP do seu PC (para celular físico)
+const LOCAL_IP = "192.168.15.12"; // ⚠️ Seu IP real da rede local
 const PORT = 4000;
 
 let BASE_URL = "";
 
 if (Platform.OS === "android") {
-  BASE_URL = __DEV__
-    ? "http://10.0.2.2:" + PORT // emulador Android
-    : `http://${LOCAL_IP}:${PORT}`; // celular físico Android
+  // Se for Android Studio Emulator (AVD) -> 10.0.2.2
+  // Se for Memu ou celular físico -> usa o IP da máquina
+  BASE_URL = `http://${LOCAL_IP}:${PORT}`;
 } else {
-  BASE_URL = `http://localhost:${PORT}`; // iOS (simulador usa localhost)
+  // iOS Simulator (ou web) usa localhost
+  BASE_URL = `http://localhost:${PORT}`;
 }
 
 console.log("🌐 API será usada em:", BASE_URL);
@@ -52,13 +51,23 @@ api.interceptors.request.use(
   }
 );
 
-// ===== FORMATADOR DE DATAS =====
+// ===== FORMATADOR DE DATAS (FIXO 12H) =====
 const formatarDataParaBackend = (data) => {
+  // Se já for string YYYY-MM-DD, apenas retorna
+  if (typeof data === "string" && /^\d{4}-\d{2}-\d{2}$/.test(data)) {
+    return data;
+  }
+
   const d = new Date(data);
   if (isNaN(d.getTime())) throw new Error("Data inválida");
+
+  // Corrige fuso horário: fixa meio-dia
+  d.setHours(12, 0, 0, 0);
+
   const ano = d.getFullYear();
   const mes = String(d.getMonth() + 1).padStart(2, "0");
   const dia = String(d.getDate()).padStart(2, "0");
+
   return `${ano}-${mes}-${dia}`;
 };
 

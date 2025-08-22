@@ -1,34 +1,37 @@
 {
-  "icon": "./assets/adaptive-icon.png",
-  "splash": {
-    "image": "./assets/adaptive-icon.png",
-    "resizeMode": "contain",
-    "backgroundColor": "#ffffff"
-  },
-  "android": {
-    "adaptiveIcon": {
-      "foregroundImage": "./assets/adaptive-icon.png",
-      "backgroundColor": "#FFFFFF"
+  "expo": {
+    "name": "omegadrive",
+    "slug": "omegadrive",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/adaptive-icon.png",
+    "splash": {
+      "image": "./assets/adaptive-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
     },
-    "icon": "./assets/adaptive-icon.png",
-    "package": "com.enzopalomaro.meumobile",
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      },
+      "package": "com.enzopalomaro.meumobile",
+      "versionCode": 1,
+      "runtimeVersion": "1.0.0"
+    },
+    "ios": {
+      "bundleIdentifier": "com.enzopalomaro.meumobile",
+      "buildNumber": "1.0.0",
+      "runtimeVersion": "1.0.0"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "6fef4081-baa2-454f-8800-d7a6a3a08916"
+      }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/6fef4081-baa2-454f-8800-d7a6a3a08916"
+    },
     "runtimeVersion": "1.0.0"
-  },
-  "ios": {
-    "icon": "./assets/adaptive-icon.png",
-    "runtimeVersion": {
-      "policy": "appVersion"
-    }
-  },
-  "extra": {
-    "eas": {
-      "projectId": "59df5902-41f4-4461-a67b-db6d287292e4"
-    }
-  },
-  "updates": {
-    "url": "https://u.expo.dev/59df5902-41f4-4461-a67b-db6d287292e4"
-  },
-  "packagerOpts": {
-    "hostType": "lan"
   }
 }
